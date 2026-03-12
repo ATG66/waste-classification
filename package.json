@@ -1,0 +1,12 @@
+{
+  "name": "ai-recycling-guide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered recycling assistant with image recognition and text guidance.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

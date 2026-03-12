@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>循环保卫站</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">AI Recycling Assistant</p>
+          <h1>循环保卫站</h1>
+          <p class="hero-text">
+            上传垃圾照片、直接拍照，或者用文字提问，让 AI 帮你判断垃圾类别，并给出更清晰的回收投放建议。
+          </p>
+          <div class="hero-actions">
+            <a class="ghost-chip" href="#vision-panel">照片识别</a>
+            <a class="ghost-chip" href="#text-panel">文字咨询</a>
+          </div>
+        </div>
+
+        <aside class="status-panel">
+          <div class="status-header">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-label">正在检查 AI 服务状态</span>
+          </div>
+          <p class="status-copy" id="status-copy">
+            页面已经准备好，正在确认后端是否已配置好模型与密钥。
+          </p>
+          <div class="status-meta">
+            <span>背景：纯白占位，后续可换背景图</span>
+            <span id="model-name">模型：待检测</span>
+          </div>
+        </aside>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel vision-panel" id="vision-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">识图模式</p>
+              <h2>拍照或上传垃圾图片</h2>
+            </div>
+            <p class="panel-tip">
+              支持相机拍摄、图片导入，AI 会识别主要垃圾并给出投放步骤。公网环境请使用 HTTPS，
+              这样浏览器才能正常启用相机权限。
+            </p>
+          </div>
+
+          <div class="vision-actions">
+            <button class="primary-btn" id="open-camera-btn" type="button">打开相机</button>
+            <button class="secondary-btn" id="upload-image-btn" type="button">导入图片</button>
+            <button class="secondary-btn" id="analyze-image-btn" type="button" disabled>开始识别</button>
+          </div>
+
+          <input class="hidden-input" id="image-upload-input" type="file" accept="image/*" />
+          <input
+            class="hidden-input"
+            id="camera-fallback-input"
+            type="file"
+            accept="image/*"
+            capture="environment"
+          />
+
+          <div class="preview-layout">
+            <div class="preview-card">
+              <p class="preview-label">图片预览</p>
+              <div class="preview-frame" id="image-preview-frame">
+                <img id="image-preview" alt="垃圾图片预览" />
+                <div class="empty-preview" id="empty-preview">
+                  <span>还没有选择图片</span>
+                  <small>你可以直接拍照，或从本地导入图片</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <p class="preview-label">识别结果</p>
+              <div class="result-body" id="image-result">
+                <div class="empty-state">
+                  <span>等待 AI 分析</span>
+                  <small>识别完成后会显示垃圾类别、原因和回收建议</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel text-panel" id="text-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">问答模式</p>
+              <h2>直接问 AI 这是什么垃圾</h2>
+            </div>
+            <p class="panel-tip">例如：奶茶杯是什么垃圾？电池该怎么扔？苹果核要怎么分类？</p>
+          </div>
+
+          <div class="text-query-box">
+            <label class="query-label" for="text-question">你的问题</label>
+            <textarea
+              id="text-question"
+              rows="5"
+              placeholder="请输入你想咨询的垃圾名称或处理问题..."
+            ></textarea>
+            <div class="text-actions">
+              <button class="primary-btn" id="ask-text-btn" type="button">立即咨询</button>
+            </div>
+          </div>
+
+          <div class="qa-panel" id="text-result">
+            <div class="empty-state">
+              <span>等待提问</span>
+              <small>输入问题后，AI 会返回垃圾分类和处理建议</small>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="camera-modal hidden" id="camera-modal" aria-hidden="true">
+      <div class="camera-dialog">
+        <div class="camera-head">
+          <div>
+            <p class="panel-kicker">相机拍摄</p>
+            <h3>对准垃圾并拍下照片</h3>
+          </div>
+          <button class="icon-btn" id="close-camera-btn" type="button" aria-label="关闭相机">
+            ×
+          </button>
+        </div>
+        <video id="camera-video" autoplay playsinline></video>
+        <div class="camera-actions">
+          <button class="secondary-btn" id="fallback-camera-btn" type="button">改用系统相机</button>
+          <button class="primary-btn" id="capture-btn" type="button">拍照并使用</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
