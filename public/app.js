@@ -48,9 +48,9 @@ function renderLoading(container, label) {
 }
 
 function categoryClass(category) {
-  if (category === "可回收物") return "recyclable";
-  if (category === "有害垃圾") return "hazardous";
-  if (category === "厨余垃圾") return "food";
+  if (category === "Recyclable Waste") return "recyclable";
+  if (category === "Hazardous Waste") return "hazardous";
+  if (category === "Food Waste") return "food";
   return "residual";
 }
 
@@ -72,8 +72,8 @@ function renderImageResults(data) {
   if (items.length === 0) {
     imageResult.innerHTML = `
       <div class="empty-state">
-        <span>这张图还不够清晰</span>
-        <small>${escapeHtml(data.note || "请换一张更清晰、角度更明确的照片再试一次。")}</small>
+        <span>This image is still too unclear</span>
+        <small>${escapeHtml(data.note || "Please try again with a sharper image and a clearer angle.")}</small>
       </div>
     `;
     return;
@@ -87,12 +87,12 @@ function renderImageResults(data) {
             <article class="result-item">
               <div class="item-head">
                 <div>
-                  <h3>${escapeHtml(item.name || "未命名物品")}</h3>
-                  <p>${escapeHtml(item.reason || "AI 已识别，但没有返回详细原因。")}</p>
+                  <h3>${escapeHtml(item.name || "Unnamed Item")}</h3>
+                  <p>${escapeHtml(item.reason || "AI identified the item, but no detailed reason was returned.")}</p>
                 </div>
                 <div>
-                  <span class="badge ${categoryClass(item.category)}">${escapeHtml(item.category || "待判断")}</span>
-                  <div class="confidence">置信度：${escapeHtml(item.confidence || "未说明")}</div>
+                  <span class="badge ${categoryClass(item.category)}">${escapeHtml(item.category || "Needs Review")}</span>
+                  <div class="confidence">Confidence: ${escapeHtml(item.confidence || "Not provided")}</div>
                 </div>
               </div>
               ${formatList(item.how_to_recycle, "guide-list")}
@@ -100,8 +100,8 @@ function renderImageResults(data) {
           `
         )
         .join("")}
-      <div class="summary-box">${escapeHtml(data.summary || "已完成识别，请按上方建议进行分类投放。")}</div>
-      <div class="note-box">${escapeHtml(data.note || "不同城市的精细化投放规则可能略有差异。")}</div>
+      <div class="summary-box">${escapeHtml(data.summary || "Analysis complete. Follow the guidance above for disposal.")}</div>
+      <div class="note-box">${escapeHtml(data.note || "Detailed waste rules may vary slightly by city.")}</div>
     </div>
   `;
 }
@@ -112,15 +112,15 @@ function renderTextResults(data) {
       <article class="qa-answer">
         <div class="answer-head">
           <div>
-            <h3>${escapeHtml(data.reply_title || "分类建议")}</h3>
-            <p>${escapeHtml(data.reason || "AI 已返回分类建议。")}</p>
+            <h3>${escapeHtml(data.reply_title || "Category Recommendation")}</h3>
+            <p>${escapeHtml(data.reason || "AI returned a classification recommendation.")}</p>
           </div>
-          <span class="badge ${categoryClass(data.category)}">${escapeHtml(data.category || "待判断")}</span>
+          <span class="badge ${categoryClass(data.category)}">${escapeHtml(data.category || "Needs Review")}</span>
         </div>
         ${formatList(data.how_to_recycle, "guide-list")}
         ${formatList(data.tips, "tips-list")}
       </article>
-      <div class="note-box">${escapeHtml(data.note || "如遇本地规则差异，请以当地投放标准为准。")}</div>
+      <div class="note-box">${escapeHtml(data.note || "If local rules differ, follow your city’s official disposal guidance.")}</div>
     </div>
   `;
 }
@@ -128,7 +128,7 @@ function renderTextResults(data) {
 function setSelectedImage(dataUrl, fileName) {
   state.imageDataUrl = dataUrl;
   imagePreview.src = dataUrl;
-  imagePreview.alt = fileName ? `${fileName} 预览` : "相机拍摄预览";
+  imagePreview.alt = fileName ? `${fileName} preview` : "Camera capture preview";
   imagePreviewFrame.classList.add("has-image");
   emptyPreview.classList.add("hidden");
   analyzeImageBtn.disabled = false;
@@ -138,7 +138,7 @@ function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("读取图片失败，请重试。"));
+    reader.onerror = () => reject(new Error("Failed to read the image. Please try again."));
     reader.readAsDataURL(file);
   });
 }
@@ -209,7 +209,7 @@ async function postJson(url, payload) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || "请求失败，请稍后重试。");
+    throw new Error(data.error || "Request failed. Please try again shortly.");
   }
 
   return data;
@@ -219,7 +219,7 @@ async function analyzeImage() {
   if (!state.imageDataUrl) return;
 
   analyzeImageBtn.disabled = true;
-  renderLoading(imageResult, "AI 正在识别图片中的垃圾...");
+  renderLoading(imageResult, "AI is analyzing the waste image...");
 
   try {
     const data = await postJson("/api/classify-image", {
@@ -229,7 +229,7 @@ async function analyzeImage() {
   } catch (error) {
     imageResult.innerHTML = `
       <div class="empty-state">
-        <span>识别失败</span>
+        <span>Recognition failed</span>
         <small>${escapeHtml(error.message)}</small>
       </div>
     `;
@@ -247,7 +247,7 @@ async function askTextQuestion() {
   }
 
   askTextBtn.disabled = true;
-  renderLoading(textResult, "AI 正在整理垃圾分类建议...");
+  renderLoading(textResult, "AI is preparing the waste classification guidance...");
 
   try {
     const data = await postJson("/api/ask-category", { question });
@@ -255,7 +255,7 @@ async function askTextQuestion() {
   } catch (error) {
     textResult.innerHTML = `
       <div class="empty-state">
-        <span>咨询失败</span>
+        <span>Request failed</span>
         <small>${escapeHtml(error.message)}</small>
       </div>
     `;
@@ -271,19 +271,19 @@ async function checkStatus() {
 
     if (data.ready) {
       statusDot.classList.add("ready");
-      statusLabel.textContent = "AI 服务已连接";
-      statusCopy.textContent = "图片识别和文字咨询都可以直接使用。";
-      modelName.textContent = `模型：${data.model}`;
+      statusLabel.textContent = "AI service is connected";
+      statusCopy.textContent = "Photo recognition and text guidance are both ready to use.";
+      modelName.textContent = `Model: ${data.model}`;
       return;
     }
 
-    statusLabel.textContent = "缺少 OPENAI_API_KEY";
-    statusCopy.textContent = "请先在启动服务前配置 OPENAI_API_KEY，之后页面即可连接 AI。";
-    modelName.textContent = `模型：${data.model || "未配置"}`;
+    statusLabel.textContent = "OPENAI_API_KEY is missing";
+    statusCopy.textContent = "Configure OPENAI_API_KEY before starting the service so the page can connect to AI.";
+    modelName.textContent = `Model: ${data.model || "Not configured"}`;
   } catch (error) {
-    statusLabel.textContent = "后端暂未启动";
-    statusCopy.textContent = "请先运行本地 Node 服务，然后再打开这个页面。";
-    modelName.textContent = "模型：不可用";
+    statusLabel.textContent = "Backend is not running";
+    statusCopy.textContent = "Start the Node service first, then refresh this page.";
+    modelName.textContent = "Model: unavailable";
   }
 }
 

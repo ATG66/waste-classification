@@ -175,7 +175,7 @@ function checkRateLimit(req, res) {
     const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     res.setHeader("Retry-After", String(retryAfter));
     sendJson(res, 429, {
-      error: "请求过于频繁，请稍后再试。"
+      error: "Too many requests. Please try again shortly."
     });
     return false;
   }
@@ -222,31 +222,32 @@ async function handleImageClassification(req, res) {
 
   if (!imageDataUrl.startsWith("data:image/")) {
     sendJson(res, 400, {
-      error: "请上传或拍摄一张有效的图片。"
+      error: "Please upload or capture a valid image."
     });
     return;
   }
 
   const prompt = [
-    "你是一个中文垃圾分类与回收指导助手。",
-    "请识别图片中的主要垃圾物品，并按中国常见垃圾分类回答。",
-    "分类只能使用：可回收物、有害垃圾、厨余垃圾、其他垃圾。",
-    "如果图片中有多个物品，最多返回 3 个最主要的物品。",
-    "如果无法可靠识别，要在 note 中明确说明不确定性。",
-    "请严格返回 JSON，不要输出任何额外说明。",
-    "JSON 结构如下：",
+    "You are an English waste classification and recycling guidance assistant.",
+    "Identify the main waste item or items in the image and classify them using the common four-bin system used in China.",
+    "The only allowed category values are: Recyclable Waste, Hazardous Waste, Food Waste, Residual Waste.",
+    "If the image contains multiple items, return at most 3 main items.",
+    "If recognition is uncertain, clearly explain that uncertainty in note.",
+    "Respond in English only.",
+    "Return strict JSON and do not output any extra text.",
+    "Use this JSON structure:",
     "{",
     '  "items": [',
     "    {",
-    '      "name": "物品名称",',
-    '      "category": "分类名称",',
-    '      "confidence": "高/中/低",',
-    '      "reason": "为什么属于这个类别",',
-    '      "how_to_recycle": ["步骤 1", "步骤 2"]',
+    '      "name": "Item name",',
+    '      "category": "Category name",',
+    '      "confidence": "High/Medium/Low",',
+    '      "reason": "Why it belongs to that category",',
+    '      "how_to_recycle": ["Step 1", "Step 2"]',
     "    }",
     "  ],",
-    '  "summary": "整体建议",',
-    '  "note": "补充提醒，可提到不同城市规则可能略有差异"',
+    '  "summary": "Overall guidance",',
+    '  "note": "Extra reminder, including that city rules may vary slightly"',
     "}"
   ].join("\n");
 
@@ -275,29 +276,30 @@ async function handleTextConsultation(req, res) {
 
   if (!question) {
     sendJson(res, 400, {
-      error: "请输入想咨询的垃圾名称或问题。"
+      error: "Please enter a waste item or disposal question."
     });
     return;
   }
 
   const prompt = [
-    "你是一个中文垃圾分类与回收指导助手。",
-    "用户会问某种垃圾属于什么类别，或者如何投放、回收、处理。",
-    "请优先按中国常见垃圾分类回答。",
-    "分类只能使用：可回收物、有害垃圾、厨余垃圾、其他垃圾。",
-    "如果问题无法唯一确定，请在 note 中提醒用户补充材质、污染程度或所在城市。",
-    "请严格返回 JSON，不要输出任何额外说明。",
-    "JSON 结构如下：",
+    "You are an English waste classification and recycling guidance assistant.",
+    "The user will ask which category an item belongs to, or how it should be disposed of or recycled.",
+    "Classify items using the common four-bin system used in China.",
+    "The only allowed category values are: Recyclable Waste, Hazardous Waste, Food Waste, Residual Waste.",
+    "If the question cannot be answered uniquely, use note to ask for material, contamination level, or city-specific context.",
+    "Respond in English only.",
+    "Return strict JSON and do not output any extra text.",
+    "Use this JSON structure:",
     "{",
-    '  "reply_title": "一句简短标题",',
-    '  "category": "分类名称或需进一步判断",',
-    '  "reason": "分类原因",',
-    '  "how_to_recycle": ["步骤 1", "步骤 2"],',
-    '  "tips": ["补充提示 1", "补充提示 2"],',
-    '  "note": "补充说明"',
+    '  "reply_title": "A short title",',
+    '  "category": "Category name",',
+    '  "reason": "Why this category fits",',
+    '  "how_to_recycle": ["Step 1", "Step 2"],',
+    '  "tips": ["Extra tip 1", "Extra tip 2"],',
+    '  "note": "Additional explanation"',
     "}",
     "",
-    `用户问题：${question}`
+    `User question: ${question}`
   ].join("\n");
 
   const result = await callOpenAI([
@@ -396,7 +398,7 @@ const server = http.createServer(async (req, res) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
     sendJson(res, statusCode, {
-      error: error.message || "服务器出现异常，请稍后再试。"
+      error: error.message || "The server encountered an error. Please try again later."
     });
   }
 });
