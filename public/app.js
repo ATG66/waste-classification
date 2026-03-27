@@ -34,6 +34,11 @@ const imageHistory = document.getElementById("image-history");
 const textHistory = document.getElementById("text-history");
 const clearImageHistoryBtn = document.getElementById("clear-image-history-btn");
 const clearTextHistoryBtn = document.getElementById("clear-text-history-btn");
+const commonItemsPanel = document.getElementById("common-items-panel");
+const commonItemsSearch = document.getElementById("common-items-search");
+const commonItemsFilters = document.getElementById("common-items-filters");
+const commonItemsGrid = document.getElementById("common-items-grid");
+const commonItemsCount = document.getElementById("common-items-count");
 
 const hasVisionUI =
   imageUploadInput &&
@@ -52,6 +57,18 @@ const hasVisionUI =
   fallbackCameraBtn;
 const hasTextUI = textQuestion && askTextBtn && textResult;
 const hasStatusUI = statusDot && statusLabel && statusCopy && modelName;
+const hasCommonItemsUI =
+  commonItemsPanel &&
+  commonItemsSearch &&
+  commonItemsFilters &&
+  commonItemsGrid &&
+  commonItemsCount;
+
+const commonItemsState = {
+  items: [],
+  activeCategory: "All",
+  query: ""
+};
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => {
@@ -79,6 +96,28 @@ function categoryClass(category) {
   if (category === "Recyclable Waste") return "recyclable";
   if (category === "Hazardous Waste") return "hazardous";
   if (category === "Food Waste") return "food";
+  return "residual";
+}
+
+function libraryCategoryClass(category) {
+  if (
+    category === "Paper" ||
+    category === "Plastics" ||
+    category === "Metals" ||
+    category === "Glass" ||
+    category === "Beverage Cartons"
+  ) {
+    return "recyclable";
+  }
+
+  if (category === "Special Recycling") {
+    return "hazardous";
+  }
+
+  if (category === "Food Waste") {
+    return "food";
+  }
+
   return "residual";
 }
 
@@ -317,6 +356,149 @@ function saveTextHistory(question, data) {
 
 function clearHistory(key) {
   window.localStorage.removeItem(key);
+}
+
+function prefillTextQuestionFromQuery() {
+  if (!textQuestion) return;
+
+  const query = new URLSearchParams(window.location.search).get("q");
+  if (!query) return;
+
+  textQuestion.value = query;
+}
+
+function getCommonItemCategories(items) {
+  return ["All", ...new Set(items.map((item) => item.category).filter(Boolean))];
+}
+
+function getFilteredCommonItems() {
+  return commonItemsState.items.filter((item) => {
+    const matchesCategory =
+      commonItemsState.activeCategory === "All" || item.category === commonItemsState.activeCategory;
+
+    if (!matchesCategory) {
+      return false;
+    }
+
+    const query = commonItemsState.query.trim().toLowerCase();
+    if (!query) {
+      return true;
+    }
+
+    const searchableText = [
+      item.name,
+      item.category,
+      item.summary,
+      item.route,
+      ...(Array.isArray(item.keywords) ? item.keywords : [])
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(query);
+  });
+}
+
+function renderCommonItemsFilters() {
+  if (!commonItemsFilters) return;
+
+  const categories = getCommonItemCategories(commonItemsState.items);
+
+  commonItemsFilters.innerHTML = categories
+    .map(
+      (category) => `
+        <button
+          class="filter-chip-btn ${category === commonItemsState.activeCategory ? "is-active" : ""}"
+          type="button"
+          data-category="${escapeHtml(category)}"
+        >
+          ${escapeHtml(category)}
+        </button>
+      `
+    )
+    .join("");
+
+  commonItemsFilters.querySelectorAll("[data-category]").forEach((button) => {
+    button.addEventListener("click", () => {
+      commonItemsState.activeCategory = button.getAttribute("data-category") || "All";
+      renderCommonItemsFilters();
+      renderCommonItemsGrid();
+    });
+  });
+}
+
+function renderCommonItemsGrid() {
+  if (!commonItemsGrid || !commonItemsCount) return;
+
+  const filteredItems = getFilteredCommonItems();
+  const totalItems = commonItemsState.items.length;
+  commonItemsCount.textContent = `${filteredItems.length} of ${totalItems} items`;
+
+  if (filteredItems.length === 0) {
+    commonItemsGrid.innerHTML = `
+      <div class="empty-state compact-empty">
+        <span>No common items matched</span>
+        <small>Try a different keyword or switch to another category filter</small>
+      </div>
+    `;
+    return;
+  }
+
+  commonItemsGrid.innerHTML = filteredItems
+    .map((item) => {
+      const askQuery = encodeURIComponent(`How should I dispose of ${item.name} in Hong Kong?`);
+      return `
+        <article class="library-card">
+          <div class="library-card-head">
+            <div>
+              <h3 class="library-card-title">${escapeHtml(item.name)}</h3>
+            </div>
+            <span class="badge ${libraryCategoryClass(item.category)}">${escapeHtml(item.category)}</span>
+          </div>
+          <div class="library-card-meta">
+            <span class="library-route-chip">${escapeHtml(item.route)}</span>
+          </div>
+          <p class="library-card-summary">${escapeHtml(item.summary)}</p>
+          ${formatList(item.steps, "library-steps")}
+          <p class="library-card-note">${escapeHtml(item.note)}</p>
+          <div class="library-card-actions">
+            <a class="library-link-btn" href="/text.html?q=${askQuery}">Ask AI About This Item</a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function initializeCommonItemsLibrary() {
+  if (!hasCommonItemsUI) return;
+
+  try {
+    const response = await fetch("/common-items.json");
+    if (!response.ok) {
+      throw new Error("Failed to load the common items guide.");
+    }
+
+    const items = await response.json();
+    commonItemsState.items = Array.isArray(items) ? items : [];
+    commonItemsState.activeCategory = "All";
+    commonItemsState.query = "";
+    renderCommonItemsFilters();
+    renderCommonItemsGrid();
+
+    commonItemsSearch.addEventListener("input", (event) => {
+      commonItemsState.query = event.target.value || "";
+      renderCommonItemsGrid();
+    });
+  } catch (error) {
+    commonItemsCount.textContent = "Guide unavailable";
+    commonItemsGrid.innerHTML = `
+      <div class="empty-state compact-empty">
+        <span>Common items could not be loaded</span>
+        <small>${escapeHtml(error.message || "Please refresh the page and try again.")}</small>
+      </div>
+    `;
+  }
 }
 
 function renderImageResults(data) {
@@ -602,6 +784,7 @@ if (hasVisionUI) {
 }
 
 if (hasTextUI) {
+  prefillTextQuestionFromQuery();
   initializeTextHistory();
   askTextBtn.addEventListener("click", askTextQuestion);
   textQuestion.addEventListener("keydown", (event) => {
@@ -609,6 +792,10 @@ if (hasTextUI) {
       askTextQuestion();
     }
   });
+}
+
+if (hasCommonItemsUI) {
+  initializeCommonItemsLibrary();
 }
 
 checkStatus();

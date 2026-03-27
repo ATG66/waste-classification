@@ -1,0 +1,305 @@
+[
+  {
+    "id": "newspaper-magazines",
+    "name": "Newspapers and magazines",
+    "category": "Paper",
+    "keywords": ["paper", "newspaper", "magazine", "flyers", "brochure"],
+    "summary": "Usually recyclable when the paper is clean and dry.",
+    "route": "Paper collection",
+    "steps": [
+      "Keep the paper dry and free from food contamination.",
+      "Bundle or stack it neatly if needed.",
+      "Place it in a paper recycling point or a community collection channel."
+    ],
+    "note": "Wet, greasy, or heavily soiled paper should not go with clean paper recycling."
+  },
+  {
+    "id": "cardboard-box",
+    "name": "Cardboard box",
+    "category": "Paper",
+    "keywords": ["cardboard", "shipping box", "paper box", "delivery box"],
+    "summary": "Recyclable when flattened and kept reasonably clean.",
+    "route": "Paper collection",
+    "steps": [
+      "Empty the box completely.",
+      "Flatten it to save space.",
+      "Remove excess tape, foam, or plastic wrapping when practical."
+    ],
+    "note": "Greasy cardboard, such as heavily soiled food boxes, should not go into clean paper recycling."
+  },
+  {
+    "id": "office-paper",
+    "name": "Office paper and textbooks",
+    "category": "Paper",
+    "keywords": ["office paper", "book", "textbook", "worksheet", "notebook"],
+    "summary": "Generally recyclable if the pages are dry and mostly clean.",
+    "route": "Paper collection",
+    "steps": [
+      "Keep the paper dry.",
+      "Remove plastic covers, binders, or large metal accessories if possible.",
+      "Place the paper in a paper collection point."
+    ],
+    "note": "Mixed materials should be separated where practical."
+  },
+  {
+    "id": "receipts-thermal-paper",
+    "name": "Receipts and thermal paper",
+    "category": "General Waste",
+    "keywords": ["receipt", "thermal paper", "shopping slip", "cash register paper"],
+    "summary": "These are usually not treated the same way as ordinary recyclable paper.",
+    "route": "General waste",
+    "steps": [
+      "Keep them out of clean paper recycling.",
+      "Dispose of them with ordinary refuse."
+    ],
+    "note": "Small coated or thermal paper slips are not a good fit for regular paper recycling streams."
+  },
+  {
+    "id": "tissue-paper",
+    "name": "Used tissue paper and paper towels",
+    "category": "General Waste",
+    "keywords": ["tissue", "paper towel", "napkin", "kitchen towel"],
+    "summary": "Usually not accepted in clean paper recycling.",
+    "route": "General waste",
+    "steps": [
+      "Wrap or bag them if needed.",
+      "Dispose of them with general waste."
+    ],
+    "note": "Once tissue products are used or contaminated, they should stay out of paper recycling."
+  },
+  {
+    "id": "plastic-bottle",
+    "name": "Plastic beverage bottle",
+    "category": "Plastics",
+    "keywords": ["plastic bottle", "water bottle", "drink bottle", "pet bottle"],
+    "summary": "Commonly recyclable when emptied and lightly rinsed.",
+    "route": "Plastics collection",
+    "steps": [
+      "Empty the bottle completely.",
+      "Rinse it quickly if there is leftover liquid.",
+      "Remove caps and labels when practical, then place it in plastics recycling."
+    ],
+    "note": "Cleaner and drier bottles are easier to recycle."
+  },
+  {
+    "id": "detergent-shampoo-bottle",
+    "name": "Plastic shampoo or detergent bottle",
+    "category": "Plastics",
+    "keywords": ["detergent bottle", "shampoo bottle", "cleaning bottle", "plastic container"],
+    "summary": "Usually recyclable if the bottle is empty and reasonably clean.",
+    "route": "Plastics collection",
+    "steps": [
+      "Use up the contents first.",
+      "Rinse out heavy residue if possible.",
+      "Place the bottle in a plastics recycling stream."
+    ],
+    "note": "Heavily contaminated containers should be cleaned first; otherwise they may be rejected."
+  },
+  {
+    "id": "takeaway-plastic-container",
+    "name": "Clean takeaway plastic container",
+    "category": "Plastics",
+    "keywords": ["takeaway box", "plastic lunch box", "food container", "meal box"],
+    "summary": "Recyclable only if food residue is removed and the container is reasonably clean.",
+    "route": "Plastics collection",
+    "steps": [
+      "Empty all leftover food.",
+      "Rinse the container if needed.",
+      "Separate mixed materials such as paper sleeves or metal cutlery before recycling."
+    ],
+    "note": "If the container is greasy or badly contaminated and cannot be cleaned, treat it as general waste."
+  },
+  {
+    "id": "plastic-bag",
+    "name": "Plastic bag",
+    "category": "Plastics",
+    "keywords": ["shopping bag", "plastic bag", "carrier bag", "soft plastic"],
+    "summary": "Clean plastic bags can usually go into plastics collection channels.",
+    "route": "Plastics collection",
+    "steps": [
+      "Shake out food scraps or rubbish first.",
+      "Keep the bag reasonably clean and dry.",
+      "Put it into a plastics collection point."
+    ],
+    "note": "Dirty bags with food residue should not be mixed with clean plastics."
+  },
+  {
+    "id": "snack-packet",
+    "name": "Snack packet or instant noodle pouch",
+    "category": "General Waste",
+    "keywords": ["chips bag", "snack packet", "instant noodle pouch", "composite packaging"],
+    "summary": "Composite packaging is usually not accepted in standard plastics recycling.",
+    "route": "General waste",
+    "steps": [
+      "Empty the packet fully.",
+      "Dispose of it with general waste unless a specialised collection route is available."
+    ],
+    "note": "Multi-layer packaging is much harder to recycle than simple plastic containers."
+  },
+  {
+    "id": "aluminium-can",
+    "name": "Aluminium can",
+    "category": "Metals",
+    "keywords": ["aluminium can", "soda can", "drink can"],
+    "summary": "A common recyclable metal item once emptied and rinsed.",
+    "route": "Metals collection",
+    "steps": [
+      "Empty the can completely.",
+      "Rinse out remaining drink.",
+      "Place it in a metals recycling point."
+    ],
+    "note": "Crushing the can is optional, but keeping it clean helps."
+  },
+  {
+    "id": "tin-can",
+    "name": "Tin can or metal food can",
+    "category": "Metals",
+    "keywords": ["tin can", "metal can", "food can", "milk powder tin"],
+    "summary": "Usually recyclable after it has been emptied and cleaned.",
+    "route": "Metals collection",
+    "steps": [
+      "Empty all food residue.",
+      "Rinse the can if needed.",
+      "Place it into a metals recycling point."
+    ],
+    "note": "Sharp edges should be handled carefully."
+  },
+  {
+    "id": "glass-bottle",
+    "name": "Glass beverage bottle",
+    "category": "Glass",
+    "keywords": ["glass bottle", "beer bottle", "wine bottle", "drink bottle"],
+    "summary": "Usually recyclable through glass bottle collection channels.",
+    "route": "Glass bottle collection",
+    "steps": [
+      "Empty and rinse the bottle.",
+      "Remove caps, pumps, or non-glass parts when practical.",
+      "Place the bottle in a glass bottle collection point."
+    ],
+    "note": "This guidance is for container glass such as beverage bottles, not for mirrors or ceramics."
+  },
+  {
+    "id": "glass-jar",
+    "name": "Glass food jar or sauce bottle",
+    "category": "Glass",
+    "keywords": ["glass jar", "sauce bottle", "jam jar", "food jar"],
+    "summary": "Usually recyclable when the container glass is empty and clean.",
+    "route": "Glass bottle collection",
+    "steps": [
+      "Empty the contents fully.",
+      "Rinse out sauces or food residue.",
+      "Remove lids when practical and place the glass in collection."
+    ],
+    "note": "Ceramics, Pyrex, and mirrors should not be mixed with container-glass recycling."
+  },
+  {
+    "id": "mirror-ceramic",
+    "name": "Mirror or broken ceramic mug",
+    "category": "General Waste",
+    "keywords": ["mirror", "ceramic", "mug", "plate", "bowl"],
+    "summary": "These are usually not accepted in ordinary glass bottle recycling.",
+    "route": "General waste",
+    "steps": [
+      "Wrap sharp pieces safely before disposal.",
+      "Keep them out of bottle-glass recycling."
+    ],
+    "note": "Bottle-glass programmes are meant for container glass, not ceramics or mirrors."
+  },
+  {
+    "id": "beverage-carton",
+    "name": "Beverage carton",
+    "category": "Beverage Cartons",
+    "keywords": ["carton", "milk carton", "juice carton", "tetra pak"],
+    "summary": "Can be recycled through dedicated carton collection routes when cleaned and flattened.",
+    "route": "Dedicated carton collection",
+    "steps": [
+      "Empty the carton fully.",
+      "Rinse it, drain it, and flatten it.",
+      "Remove straws or extra wrapping when practical, then use a carton recycling channel."
+    ],
+    "note": "Cartons need a dedicated collection route and should not be treated exactly like ordinary paper."
+  },
+  {
+    "id": "rechargeable-battery",
+    "name": "Rechargeable battery or power bank",
+    "category": "Special Recycling",
+    "keywords": ["rechargeable battery", "power bank", "lithium battery", "portable charger"],
+    "summary": "Use a dedicated rechargeable battery or special recycling collection route.",
+    "route": "Special recycling",
+    "steps": [
+      "Do not place it in ordinary recycling bins.",
+      "Tape exposed terminals when practical.",
+      "Bring it to a suitable battery or community collection point."
+    ],
+    "note": "Damaged, swollen, or leaking batteries should be handled with extra care."
+  },
+  {
+    "id": "disposable-battery",
+    "name": "Disposable household battery",
+    "category": "General Waste",
+    "keywords": ["alkaline battery", "disposable battery", "aa battery", "aaa battery"],
+    "summary": "These are not usually handled the same way as rechargeable batteries.",
+    "route": "General waste",
+    "steps": [
+      "Keep them separate from rechargeable batteries.",
+      "Follow ordinary household disposal arrangements unless a dedicated local programme is available."
+    ],
+    "note": "Do not assume every battery collection point accepts disposable household batteries."
+  },
+  {
+    "id": "fluorescent-lamp",
+    "name": "Fluorescent tube or compact fluorescent lamp",
+    "category": "Special Recycling",
+    "keywords": ["fluorescent tube", "cfl", "energy saving bulb", "lamp"],
+    "summary": "Use a dedicated lamp collection route instead of regular bins.",
+    "route": "Special recycling",
+    "steps": [
+      "Keep the lamp unbroken if possible.",
+      "Return it through a suitable collection channel for fluorescent lamps.",
+      "Avoid mixing it with ordinary glass or general waste unless no special route is available."
+    ],
+    "note": "These lamps need more careful handling than ordinary household waste."
+  },
+  {
+    "id": "small-electrical-appliance",
+    "name": "Small electrical appliance",
+    "category": "Special Recycling",
+    "keywords": ["fan", "hair dryer", "kettle", "rice cooker", "small appliance", "toaster"],
+    "summary": "Use a designated collection channel for recyclable small electrical appliances.",
+    "route": "Special recycling",
+    "steps": [
+      "Unplug the appliance and keep it dry.",
+      "Bundle loose wires if practical.",
+      "Take it to a suitable community collection channel for small electrical appliances."
+    ],
+    "note": "Acceptance can vary by item type, especially for specialised medical or personal-care devices."
+  },
+  {
+    "id": "regulated-electrical-equipment",
+    "name": "Large electrical appliance or regulated e-waste",
+    "category": "Special Recycling",
+    "keywords": ["tv", "fridge", "washing machine", "air conditioner", "computer", "monitor"],
+    "summary": "Use seller take-back or an approved collection service instead of ordinary disposal.",
+    "route": "Special recycling service",
+    "steps": [
+      "Do not leave the item in ordinary recycling bins.",
+      "Arrange seller removal or an approved collection service where available.",
+      "Follow the relevant e-waste collection route for large or regulated equipment."
+    ],
+    "note": "Large or regulated electrical equipment usually needs a dedicated removal arrangement."
+  },
+  {
+    "id": "food-scraps",
+    "name": "Food scraps and fruit peels",
+    "category": "Food Waste",
+    "keywords": ["food waste", "fruit peels", "leftovers", "vegetable scraps"],
+    "summary": "Keep food scraps separate from dry recyclables and use food-waste collection if available.",
+    "route": "Food waste collection",
+    "steps": [
+      "Drain excess liquid first when possible.",
+      "Use a food-waste collection point if your building or estate provides one.",
+      "Otherwise follow your building’s ordinary refuse arrangement."
+    ],
+    "note": "Food waste collection availability can vary by building and district."
+  }
+]
