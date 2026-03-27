@@ -26,6 +26,10 @@ const fallbackCameraBtn = document.getElementById("fallback-camera-btn");
 const textQuestion = document.getElementById("text-question");
 const askTextBtn = document.getElementById("ask-text-btn");
 const textResult = document.getElementById("text-result");
+const startVoiceBtn = document.getElementById("start-voice-btn");
+const stopVoiceBtn = document.getElementById("stop-voice-btn");
+const voiceLanguageSelect = document.getElementById("voice-language");
+const voiceStatus = document.getElementById("voice-status");
 const statusDot = document.getElementById("status-dot");
 const statusLabel = document.getElementById("status-label");
 const statusCopy = document.getElementById("status-copy");
@@ -68,6 +72,13 @@ const commonItemsState = {
   items: [],
   activeCategory: "All",
   query: ""
+};
+const voiceState = {
+  recognition: null,
+  supported: false,
+  listening: false,
+  baseText: "",
+  finalTranscript: ""
 };
 
 function escapeHtml(value) {
@@ -356,6 +367,162 @@ function saveTextHistory(question, data) {
 
 function clearHistory(key) {
   window.localStorage.removeItem(key);
+}
+
+function setVoiceStatus(message, tone = "default") {
+  if (!voiceStatus) return;
+
+  voiceStatus.textContent = message;
+  voiceStatus.classList.remove("is-recording", "is-error");
+
+  if (tone === "recording") {
+    voiceStatus.classList.add("is-recording");
+  }
+
+  if (tone === "error") {
+    voiceStatus.classList.add("is-error");
+  }
+}
+
+function updateVoiceButtons() {
+  if (!startVoiceBtn || !stopVoiceBtn || !voiceLanguageSelect) return;
+
+  startVoiceBtn.disabled = !voiceState.supported || voiceState.listening;
+  stopVoiceBtn.disabled = !voiceState.supported || !voiceState.listening;
+  voiceLanguageSelect.disabled = voiceState.listening;
+}
+
+function applyTranscript(interimTranscript = "") {
+  if (!textQuestion) return;
+
+  const base = voiceState.baseText ? `${voiceState.baseText.trimEnd()} ` : "";
+  const composed = `${base}${voiceState.finalTranscript}${interimTranscript}`.trim();
+  textQuestion.value = composed;
+}
+
+function stopVoiceRecognition(forceAbort = false) {
+  if (!voiceState.recognition) return;
+
+  if (forceAbort) {
+    voiceState.recognition.abort();
+  } else {
+    voiceState.recognition.stop();
+  }
+}
+
+function initializeVoiceInput() {
+  if (!hasTextUI || !startVoiceBtn || !stopVoiceBtn || !voiceLanguageSelect || !voiceStatus) {
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    voiceState.supported = false;
+    setVoiceStatus(
+      "Voice input is not supported in this browser. You can still type your question manually.",
+      "error"
+    );
+    updateVoiceButtons();
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = voiceLanguageSelect.value || "en-HK";
+  voiceState.recognition = recognition;
+  voiceState.supported = true;
+  setVoiceStatus(
+    "Voice input is ready. Choose a language, start speaking, then review the transcript before asking AI."
+  );
+  updateVoiceButtons();
+
+  recognition.onstart = () => {
+    voiceState.listening = true;
+    voiceState.baseText = textQuestion.value.trim();
+    voiceState.finalTranscript = "";
+    setVoiceStatus("Listening... speak clearly and pause when you are done.", "recording");
+    updateVoiceButtons();
+  };
+
+  recognition.onresult = (event) => {
+    let finalTranscript = "";
+    let interimTranscript = "";
+
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      const transcript = event.results[index][0]?.transcript || "";
+      if (event.results[index].isFinal) {
+        finalTranscript += transcript;
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+
+    if (finalTranscript) {
+      voiceState.finalTranscript = `${voiceState.finalTranscript}${finalTranscript}`.trim();
+    }
+
+    applyTranscript(interimTranscript);
+  };
+
+  recognition.onerror = (event) => {
+    voiceState.listening = false;
+    updateVoiceButtons();
+
+    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+      setVoiceStatus(
+        "Microphone permission was denied. Please allow microphone access and try again.",
+        "error"
+      );
+      return;
+    }
+
+    if (event.error === "no-speech") {
+      setVoiceStatus("No speech was detected. Please try again and speak a little closer to the microphone.", "error");
+      return;
+    }
+
+    if (event.error === "audio-capture") {
+      setVoiceStatus("No microphone was detected. Please check your device audio input and try again.", "error");
+      return;
+    }
+
+    setVoiceStatus("Voice input stopped unexpectedly. Please try again.", "error");
+  };
+
+  recognition.onend = () => {
+    const wasListening = voiceState.listening;
+    voiceState.listening = false;
+    updateVoiceButtons();
+
+    if (!wasListening) {
+      return;
+    }
+
+    if (voiceState.finalTranscript || textQuestion.value.trim()) {
+      setVoiceStatus("Voice input finished. Review the transcript and press Ask AI when ready.");
+      return;
+    }
+
+    setVoiceStatus("Voice input finished without a transcript. You can try again or type manually.", "error");
+  };
+
+  startVoiceBtn.addEventListener("click", () => {
+    if (!voiceState.recognition || voiceState.listening) return;
+
+    voiceState.recognition.lang = voiceLanguageSelect.value || "en-HK";
+    try {
+      voiceState.recognition.start();
+    } catch (error) {
+      setVoiceStatus("Voice input could not start right now. Please try again.", "error");
+    }
+  });
+
+  stopVoiceBtn.addEventListener("click", () => {
+    if (!voiceState.recognition || !voiceState.listening) return;
+    stopVoiceRecognition(false);
+  });
 }
 
 function prefillTextQuestionFromQuery() {
@@ -785,6 +952,7 @@ if (hasVisionUI) {
 
 if (hasTextUI) {
   prefillTextQuestionFromQuery();
+  initializeVoiceInput();
   initializeTextHistory();
   askTextBtn.addEventListener("click", askTextQuestion);
   textQuestion.addEventListener("keydown", (event) => {
@@ -792,6 +960,7 @@ if (hasTextUI) {
       askTextQuestion();
     }
   });
+  window.addEventListener("beforeunload", () => stopVoiceRecognition(true));
 }
 
 if (hasCommonItemsUI) {

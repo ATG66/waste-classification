@@ -35,6 +35,27 @@
 
           <div class="text-query-box">
             <label class="query-label" for="text-question">Your Question</label>
+            <div class="voice-toolbar">
+              <label class="voice-language-box" for="voice-language">
+                <span class="query-label">Voice Language</span>
+                <select id="voice-language" class="voice-language-select">
+                  <option value="en-HK">English (Hong Kong)</option>
+                  <option value="yue-Hant-HK">Cantonese (Hong Kong)</option>
+                  <option value="zh-HK">Chinese (Hong Kong)</option>
+                </select>
+              </label>
+              <div class="voice-actions">
+                <button class="secondary-btn" id="start-voice-btn" type="button">
+                  Start Voice Input
+                </button>
+                <button class="secondary-btn" id="stop-voice-btn" type="button" disabled>
+                  Stop Listening
+                </button>
+              </div>
+            </div>
+            <div class="voice-status" id="voice-status">
+              Voice input is ready when supported by your browser.
+            </div>
             <textarea
               id="text-question"
               rows="5"
