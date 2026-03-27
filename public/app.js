@@ -1,3 +1,9 @@
+const STORAGE_KEYS = {
+  image: "recycle-compass:image-history",
+  text: "recycle-compass:text-history"
+};
+const MAX_HISTORY_ITEMS = 8;
+
 const state = {
   imageDataUrl: "",
   stream: null
@@ -24,6 +30,11 @@ const statusDot = document.getElementById("status-dot");
 const statusLabel = document.getElementById("status-label");
 const statusCopy = document.getElementById("status-copy");
 const modelName = document.getElementById("model-name");
+const imageHistory = document.getElementById("image-history");
+const textHistory = document.getElementById("text-history");
+const clearImageHistoryBtn = document.getElementById("clear-image-history-btn");
+const clearTextHistoryBtn = document.getElementById("clear-text-history-btn");
+
 const hasVisionUI =
   imageUploadInput &&
   cameraFallbackInput &&
@@ -81,6 +92,231 @@ function formatList(items, className) {
       ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
     </ul>
   `;
+}
+
+function safeJsonParse(value, fallback) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function readHistory(key) {
+  const raw = window.localStorage.getItem(key);
+  if (!raw) {
+    return [];
+  }
+
+  const parsed = safeJsonParse(raw, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function writeHistory(key, items) {
+  window.localStorage.setItem(key, JSON.stringify(items.slice(0, MAX_HISTORY_ITEMS)));
+}
+
+function formatTimestamp(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function truncateText(value, maxLength) {
+  const text = String(value || "");
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength - 1).trimEnd()}...`;
+}
+
+function getImageHistoryTitle(entry) {
+  const itemNames = Array.isArray(entry.items)
+    ? entry.items
+        .map((item) => item?.name)
+        .filter(Boolean)
+        .slice(0, 2)
+    : [];
+
+  if (itemNames.length > 0) {
+    return itemNames.join(" + ");
+  }
+
+  return "Waste Scan";
+}
+
+function getTextHistoryTitle(entry) {
+  return entry.replyTitle || "Classification Question";
+}
+
+function renderEmptyHistory(container, title, description) {
+  container.innerHTML = `
+    <div class="empty-state compact-empty">
+      <span>${escapeHtml(title)}</span>
+      <small>${escapeHtml(description)}</small>
+    </div>
+  `;
+}
+
+function renderImageHistory() {
+  if (!imageHistory) return;
+
+  const items = readHistory(STORAGE_KEYS.image);
+
+  if (items.length === 0) {
+    renderEmptyHistory(
+      imageHistory,
+      "No photo history yet",
+      "Your recent image analysis results will appear here"
+    );
+    return;
+  }
+
+  imageHistory.innerHTML = items
+    .map((entry) => {
+      const firstCategory = entry.items?.[0]?.category || "Needs Review";
+      const summary = entry.summary || entry.note || "No summary available.";
+      const thumbnailMarkup = entry.thumbnail
+        ? `<img class="history-thumb" src="${escapeHtml(entry.thumbnail)}" alt="Saved waste scan thumbnail" />`
+        : `<div class="history-thumb history-thumb-empty">Saved locally</div>`;
+      return `
+        <article class="history-item">
+          ${thumbnailMarkup}
+          <div class="history-content">
+            <div class="history-topline">
+              <div>
+                <h3 class="history-title">${escapeHtml(getImageHistoryTitle(entry))}</h3>
+              </div>
+              <span class="history-time">${escapeHtml(formatTimestamp(entry.createdAt))}</span>
+            </div>
+            <div class="history-actions">
+              <span class="badge ${categoryClass(firstCategory)}">${escapeHtml(firstCategory)}</span>
+              <span class="history-chip">${escapeHtml(`${entry.items?.length || 0} detected item(s)`)}</span>
+            </div>
+            <p class="history-summary">${escapeHtml(truncateText(summary, 180))}</p>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderTextHistory() {
+  if (!textHistory) return;
+
+  const items = readHistory(STORAGE_KEYS.text);
+
+  if (items.length === 0) {
+    renderEmptyHistory(
+      textHistory,
+      "No text history yet",
+      "Your recent waste classification questions will appear here"
+    );
+    return;
+  }
+
+  textHistory.innerHTML = items
+    .map((entry) => `
+      <article class="history-item">
+        <div class="history-content history-content-full">
+          <div class="history-topline">
+            <div>
+              <h3 class="history-title">${escapeHtml(getTextHistoryTitle(entry))}</h3>
+            </div>
+            <span class="history-time">${escapeHtml(formatTimestamp(entry.createdAt))}</span>
+          </div>
+          <div class="history-actions">
+            <span class="badge ${categoryClass(entry.category)}">${escapeHtml(entry.category || "Needs Review")}</span>
+          </div>
+          <p class="history-question">${escapeHtml(truncateText(entry.question, 180))}</p>
+          <p class="history-reason">${escapeHtml(truncateText(entry.reason || entry.note || "No details available.", 220))}</p>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+async function createThumbnail(dataUrl) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => {
+      const maxSide = 240;
+      const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        resolve("");
+        return;
+      }
+
+      context.drawImage(image, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.72));
+    };
+    image.onerror = () => resolve("");
+    image.src = dataUrl;
+  });
+}
+
+async function saveImageHistory(data) {
+  try {
+    const entries = readHistory(STORAGE_KEYS.image);
+    const thumbnail = await createThumbnail(state.imageDataUrl);
+    const historyEntry = {
+      createdAt: new Date().toISOString(),
+      thumbnail,
+      summary: data.summary || "",
+      note: data.note || "",
+      items: Array.isArray(data.items)
+        ? data.items.slice(0, 3).map((item) => ({
+            name: item?.name || "",
+            category: item?.category || "Needs Review"
+          }))
+        : []
+    };
+
+    writeHistory(STORAGE_KEYS.image, [historyEntry, ...entries]);
+    renderImageHistory();
+  } catch (error) {
+    console.warn("Failed to save image history:", error);
+  }
+}
+
+function saveTextHistory(question, data) {
+  try {
+    const entries = readHistory(STORAGE_KEYS.text);
+    const historyEntry = {
+      createdAt: new Date().toISOString(),
+      question,
+      replyTitle: data.reply_title || "Classification Question",
+      category: data.category || "Needs Review",
+      reason: data.reason || "",
+      note: data.note || ""
+    };
+
+    writeHistory(STORAGE_KEYS.text, [historyEntry, ...entries]);
+    renderTextHistory();
+  } catch (error) {
+    console.warn("Failed to save text history:", error);
+  }
+}
+
+function clearHistory(key) {
+  window.localStorage.removeItem(key);
 }
 
 function renderImageResults(data) {
@@ -250,6 +486,7 @@ async function analyzeImage() {
       imageDataUrl: state.imageDataUrl
     });
     renderImageResults(data);
+    await saveImageHistory(data);
   } catch (error) {
     imageResult.innerHTML = `
       <div class="empty-state">
@@ -277,6 +514,7 @@ async function askTextQuestion() {
   try {
     const data = await postJson("/api/ask-category", { question });
     renderTextResults(data);
+    saveTextHistory(question, data);
   } catch (error) {
     textResult.innerHTML = `
       <div class="empty-state">
@@ -304,7 +542,8 @@ async function checkStatus() {
     }
 
     statusLabel.textContent = "OPENAI_API_KEY is missing";
-    statusCopy.textContent = "Configure OPENAI_API_KEY before starting the service so the page can connect to AI.";
+    statusCopy.textContent =
+      "Configure OPENAI_API_KEY before starting the service so the page can connect to AI.";
     modelName.textContent = `Model: ${data.model || "Not configured"}`;
   } catch (error) {
     statusLabel.textContent = "Backend is not running";
@@ -313,7 +552,30 @@ async function checkStatus() {
   }
 }
 
+function initializeVisionHistory() {
+  renderImageHistory();
+
+  if (clearImageHistoryBtn) {
+    clearImageHistoryBtn.addEventListener("click", () => {
+      clearHistory(STORAGE_KEYS.image);
+      renderImageHistory();
+    });
+  }
+}
+
+function initializeTextHistory() {
+  renderTextHistory();
+
+  if (clearTextHistoryBtn) {
+    clearTextHistoryBtn.addEventListener("click", () => {
+      clearHistory(STORAGE_KEYS.text);
+      renderTextHistory();
+    });
+  }
+}
+
 if (hasVisionUI) {
+  initializeVisionHistory();
   uploadImageBtn.addEventListener("click", () => imageUploadInput.click());
   openCameraBtn.addEventListener("click", openCamera);
   closeCameraBtn.addEventListener("click", stopCamera);
@@ -340,6 +602,7 @@ if (hasVisionUI) {
 }
 
 if (hasTextUI) {
+  initializeTextHistory();
   askTextBtn.addEventListener("click", askTextQuestion);
   textQuestion.addEventListener("keydown", (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
