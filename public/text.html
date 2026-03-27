@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Help | Recycle Compass</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell feature-shell">
+      <header class="feature-header panel">
+        <div>
+          <a class="back-link" href="/">&larr; Back to Home</a>
+          <p class="eyebrow">Text Mode</p>
+          <h1 class="feature-title">Text Help</h1>
+          <p class="feature-copy">
+            Ask AI about a material, an item, or the right disposal method, and it will return a
+            clear category recommendation with practical guidance.
+          </p>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel text-panel" id="text-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Waste Classification Q&amp;A</p>
+              <h2>Ask AI what category an item belongs to</h2>
+            </div>
+            <p class="panel-tip">
+              Examples: What category is a bubble tea cup? How should I throw away batteries?
+              Where do apple cores go?
+            </p>
+          </div>
+
+          <div class="text-query-box">
+            <label class="query-label" for="text-question">Your Question</label>
+            <textarea
+              id="text-question"
+              rows="5"
+              placeholder="Ask about an item, a material, or how to dispose of something..."
+            ></textarea>
+            <div class="text-actions">
+              <button class="primary-btn" id="ask-text-btn" type="button">Ask AI</button>
+            </div>
+          </div>
+
+          <div class="qa-panel" id="text-result">
+            <div class="empty-state">
+              <span>Waiting for your question</span>
+              <small>Once you ask, AI will return the category and disposal guidance</small>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

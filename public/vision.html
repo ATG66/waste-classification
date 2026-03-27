@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Photo Scan | Recycle Compass</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell feature-shell">
+      <header class="feature-header panel">
+        <div>
+          <a class="back-link" href="/">&larr; Back to Home</a>
+          <p class="eyebrow">Vision Mode</p>
+          <h1 class="feature-title">Photo Scan</h1>
+          <p class="feature-copy">
+            Take a photo or upload an image, and AI will identify the main waste item and
+            recommend the right disposal steps.
+          </p>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel vision-panel" id="vision-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Image Recognition</p>
+              <h2>Capture or upload a waste image</h2>
+            </div>
+            <p class="panel-tip">
+              Use your camera or import an image. On public deployments, keep HTTPS enabled so
+              camera permissions work correctly.
+            </p>
+          </div>
+
+          <div class="vision-actions">
+            <button class="primary-btn" id="open-camera-btn" type="button">Open Camera</button>
+            <button class="secondary-btn" id="upload-image-btn" type="button">Upload Image</button>
+            <button class="secondary-btn" id="analyze-image-btn" type="button" disabled>
+              Analyze Image
+            </button>
+          </div>
+
+          <input class="hidden-input" id="image-upload-input" type="file" accept="image/*" />
+          <input
+            class="hidden-input"
+            id="camera-fallback-input"
+            type="file"
+            accept="image/*"
+            capture="environment"
+          />
+
+          <div class="preview-layout">
+            <div class="preview-card">
+              <p class="preview-label">Image Preview</p>
+              <div class="preview-frame" id="image-preview-frame">
+                <img id="image-preview" alt="Waste image preview" />
+                <div class="empty-preview" id="empty-preview">
+                  <span>No image selected yet</span>
+                  <small>You can take a photo now or upload one from your device</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <p class="preview-label">Recognition Result</p>
+              <div class="result-body" id="image-result">
+                <div class="empty-state">
+                  <span>Waiting for AI analysis</span>
+                  <small>The result will show the waste category, reasoning, and next steps</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="camera-modal hidden" id="camera-modal" aria-hidden="true">
+      <div class="camera-dialog">
+        <div class="camera-head">
+          <div>
+            <p class="panel-kicker">Camera Capture</p>
+            <h3>Point the camera at the waste item</h3>
+          </div>
+          <button class="icon-btn" id="close-camera-btn" type="button" aria-label="Close camera">
+            ×
+          </button>
+        </div>
+        <video id="camera-video" autoplay playsinline></video>
+        <div class="camera-actions">
+          <button class="secondary-btn" id="fallback-camera-btn" type="button">
+            Use Device Camera Instead
+          </button>
+          <button class="primary-btn" id="capture-btn" type="button">Capture and Use</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

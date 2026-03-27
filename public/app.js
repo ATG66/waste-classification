@@ -24,6 +24,23 @@ const statusDot = document.getElementById("status-dot");
 const statusLabel = document.getElementById("status-label");
 const statusCopy = document.getElementById("status-copy");
 const modelName = document.getElementById("model-name");
+const hasVisionUI =
+  imageUploadInput &&
+  cameraFallbackInput &&
+  imagePreview &&
+  imagePreviewFrame &&
+  emptyPreview &&
+  imageResult &&
+  analyzeImageBtn &&
+  uploadImageBtn &&
+  openCameraBtn &&
+  cameraModal &&
+  cameraVideo &&
+  closeCameraBtn &&
+  captureBtn &&
+  fallbackCameraBtn;
+const hasTextUI = textQuestion && askTextBtn && textResult;
+const hasStatusUI = statusDot && statusLabel && statusCopy && modelName;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => {
@@ -67,6 +84,7 @@ function formatList(items, className) {
 }
 
 function renderImageResults(data) {
+  if (!imageResult) return;
   const items = Array.isArray(data.items) ? data.items : [];
 
   if (items.length === 0) {
@@ -107,6 +125,7 @@ function renderImageResults(data) {
 }
 
 function renderTextResults(data) {
+  if (!textResult) return;
   textResult.innerHTML = `
     <div class="qa-stack">
       <article class="qa-answer">
@@ -126,6 +145,7 @@ function renderTextResults(data) {
 }
 
 function setSelectedImage(dataUrl, fileName) {
+  if (!imagePreview || !imagePreviewFrame || !emptyPreview || !analyzeImageBtn) return;
   state.imageDataUrl = dataUrl;
   imagePreview.src = dataUrl;
   imagePreview.alt = fileName ? `${fileName} preview` : "Camera capture preview";
@@ -150,6 +170,7 @@ async function handleFileSelection(file) {
 }
 
 function stopCamera() {
+  if (!cameraVideo || !cameraModal) return;
   if (state.stream) {
     state.stream.getTracks().forEach((track) => track.stop());
     state.stream = null;
@@ -161,6 +182,7 @@ function stopCamera() {
 }
 
 async function openCamera() {
+  if (!cameraFallbackInput) return;
   if (!navigator.mediaDevices?.getUserMedia) {
     cameraFallbackInput.click();
     return;
@@ -183,6 +205,7 @@ async function openCamera() {
 }
 
 function captureCurrentFrame() {
+  if (!cameraVideo) return;
   if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) {
     return;
   }
@@ -216,6 +239,7 @@ async function postJson(url, payload) {
 }
 
 async function analyzeImage() {
+  if (!analyzeImageBtn || !imageResult) return;
   if (!state.imageDataUrl) return;
 
   analyzeImageBtn.disabled = true;
@@ -239,6 +263,7 @@ async function analyzeImage() {
 }
 
 async function askTextQuestion() {
+  if (!textQuestion || !askTextBtn || !textResult) return;
   const question = textQuestion.value.trim();
 
   if (!question) {
@@ -265,6 +290,7 @@ async function askTextQuestion() {
 }
 
 async function checkStatus() {
+  if (!hasStatusUI) return;
   try {
     const response = await fetch("/api/status");
     const data = await response.json();
@@ -287,34 +313,39 @@ async function checkStatus() {
   }
 }
 
-uploadImageBtn.addEventListener("click", () => imageUploadInput.click());
-openCameraBtn.addEventListener("click", openCamera);
-closeCameraBtn.addEventListener("click", stopCamera);
-captureBtn.addEventListener("click", captureCurrentFrame);
-fallbackCameraBtn.addEventListener("click", () => {
-  stopCamera();
-  cameraFallbackInput.click();
-});
-analyzeImageBtn.addEventListener("click", analyzeImage);
-askTextBtn.addEventListener("click", askTextQuestion);
-textQuestion.addEventListener("keydown", (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-    askTextQuestion();
-  }
-});
-imageUploadInput.addEventListener("change", async (event) => {
-  await handleFileSelection(event.target.files?.[0]);
-  event.target.value = "";
-});
-cameraFallbackInput.addEventListener("change", async (event) => {
-  await handleFileSelection(event.target.files?.[0]);
-  event.target.value = "";
-});
-cameraModal.addEventListener("click", (event) => {
-  if (event.target === cameraModal) {
+if (hasVisionUI) {
+  uploadImageBtn.addEventListener("click", () => imageUploadInput.click());
+  openCameraBtn.addEventListener("click", openCamera);
+  closeCameraBtn.addEventListener("click", stopCamera);
+  captureBtn.addEventListener("click", captureCurrentFrame);
+  fallbackCameraBtn.addEventListener("click", () => {
     stopCamera();
-  }
-});
-window.addEventListener("beforeunload", stopCamera);
+    cameraFallbackInput.click();
+  });
+  analyzeImageBtn.addEventListener("click", analyzeImage);
+  imageUploadInput.addEventListener("change", async (event) => {
+    await handleFileSelection(event.target.files?.[0]);
+    event.target.value = "";
+  });
+  cameraFallbackInput.addEventListener("change", async (event) => {
+    await handleFileSelection(event.target.files?.[0]);
+    event.target.value = "";
+  });
+  cameraModal.addEventListener("click", (event) => {
+    if (event.target === cameraModal) {
+      stopCamera();
+    }
+  });
+  window.addEventListener("beforeunload", stopCamera);
+}
+
+if (hasTextUI) {
+  askTextBtn.addEventListener("click", askTextQuestion);
+  textQuestion.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      askTextQuestion();
+    }
+  });
+}
 
 checkStatus();
