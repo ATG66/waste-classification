@@ -77,6 +77,8 @@ const voiceState = {
   recognition: null,
   supported: false,
   listening: false,
+  requestingPermission: false,
+  permissionGranted: false,
   baseText: "",
   finalTranscript: ""
 };
@@ -387,9 +389,10 @@ function setVoiceStatus(message, tone = "default") {
 function updateVoiceButtons() {
   if (!startVoiceBtn || !stopVoiceBtn || !voiceLanguageSelect) return;
 
-  startVoiceBtn.disabled = !voiceState.supported || voiceState.listening;
+  startVoiceBtn.disabled =
+    !voiceState.supported || voiceState.listening || voiceState.requestingPermission;
   stopVoiceBtn.disabled = !voiceState.supported || !voiceState.listening;
-  voiceLanguageSelect.disabled = voiceState.listening;
+  voiceLanguageSelect.disabled = voiceState.listening || voiceState.requestingPermission;
 }
 
 function applyTranscript(interimTranscript = "") {
@@ -407,6 +410,62 @@ function stopVoiceRecognition(forceAbort = false) {
     voiceState.recognition.abort();
   } else {
     voiceState.recognition.stop();
+  }
+}
+
+async function ensureMicrophonePermission() {
+  if (voiceState.permissionGranted) {
+    return true;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setVoiceStatus(
+      "This browser cannot request microphone access directly. Please type your question manually or switch to a newer browser.",
+      "error"
+    );
+    return false;
+  }
+
+  voiceState.requestingPermission = true;
+  updateVoiceButtons();
+  setVoiceStatus("Requesting microphone permission...", "recording");
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false
+    });
+
+    stream.getTracks().forEach((track) => track.stop());
+    voiceState.permissionGranted = true;
+    return true;
+  } catch (error) {
+    voiceState.permissionGranted = false;
+
+    if (error?.name === "NotAllowedError" || error?.name === "PermissionDeniedError") {
+      setVoiceStatus(
+        "Microphone permission was denied. Please allow microphone access for this site and try again.",
+        "error"
+      );
+      return false;
+    }
+
+    if (error?.name === "NotFoundError" || error?.name === "DevicesNotFoundError") {
+      setVoiceStatus(
+        "No microphone was detected. Please connect a microphone and try again.",
+        "error"
+      );
+      return false;
+    }
+
+    setVoiceStatus(
+      "Microphone access could not be started. Please check your browser and system microphone settings.",
+      "error"
+    );
+    return false;
+  } finally {
+    voiceState.requestingPermission = false;
+    updateVoiceButtons();
   }
 }
 
@@ -508,8 +567,13 @@ function initializeVoiceInput() {
     setVoiceStatus("Voice input finished without a transcript. You can try again or type manually.", "error");
   };
 
-  startVoiceBtn.addEventListener("click", () => {
-    if (!voiceState.recognition || voiceState.listening) return;
+  startVoiceBtn.addEventListener("click", async () => {
+    if (!voiceState.recognition || voiceState.listening || voiceState.requestingPermission) return;
+
+    const canUseMicrophone = await ensureMicrophonePermission();
+    if (!canUseMicrophone) {
+      return;
+    }
 
     voiceState.recognition.lang = voiceLanguageSelect.value || "en-HK";
     try {
