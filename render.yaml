@@ -7,10 +7,10 @@ services:
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
-      - key: OPENAI_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
-      - key: OPENAI_MODEL
-        value: gpt-4.1-mini
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
       - key: HOST
         value: 0.0.0.0
       - key: RATE_LIMIT_WINDOW_MS

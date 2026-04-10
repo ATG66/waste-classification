@@ -948,15 +948,15 @@ async function checkStatus() {
 
     if (data.ready) {
       statusDot.classList.add("ready");
-      statusLabel.textContent = "AI service is connected";
+      statusLabel.textContent = "Gemini service is connected";
       statusCopy.textContent = "Photo recognition and text guidance are both ready to use.";
       modelName.textContent = `Model: ${data.model}`;
       return;
     }
 
-    statusLabel.textContent = "OPENAI_API_KEY is missing";
+    statusLabel.textContent = "GEMINI_API_KEY is missing";
     statusCopy.textContent =
-      "Configure OPENAI_API_KEY before starting the service so the page can connect to AI.";
+      "Configure GEMINI_API_KEY before starting the service so the page can connect to Gemini.";
     modelName.textContent = `Model: ${data.model || "Not configured"}`;
   } catch (error) {
     statusLabel.textContent = "Backend is not running";

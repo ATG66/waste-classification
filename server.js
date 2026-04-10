@@ -5,12 +5,18 @@ const { URL } = require("url");
 
 const HOST = process.env.HOST || "0.0.0.0";
 const PORT = Number(process.env.PORT || 3000);
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
 const RATE_LIMIT_MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 20);
 const PUBLIC_DIR = path.join(__dirname, "public");
 const rateLimitStore = new Map();
+const CATEGORY_VALUES = [
+  "Recyclable Waste",
+  "Hazardous Waste",
+  "Food Waste",
+  "Residual Waste"
+];
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -28,7 +34,7 @@ function setCommonHeaders(res) {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-  res.setHeader("Permissions-Policy", "camera=(self), microphone=(), geolocation=()");
+  res.setHeader("Permissions-Policy", "camera=(self), microphone=(self), geolocation=()");
   res.setHeader(
     "Content-Security-Policy",
     [
@@ -98,18 +104,18 @@ function readBody(req) {
 }
 
 function extractResponseText(payload) {
-  if (typeof payload?.output_text === "string" && payload.output_text.trim()) {
-    return payload.output_text.trim();
-  }
-
   const texts = [];
 
-  for (const output of payload?.output || []) {
-    for (const content of output?.content || []) {
-      if (content?.type === "output_text" && typeof content?.text === "string") {
-        texts.push(content.text);
+  for (const candidate of payload?.candidates || []) {
+    for (const part of candidate?.content?.parts || []) {
+      if (typeof part?.text === "string" && part.text.trim()) {
+        texts.push(part.text);
       }
     }
+  }
+
+  if (texts.length === 0 && payload?.promptFeedback?.blockReason) {
+    throw new Error(`Gemini blocked the request: ${payload.promptFeedback.blockReason}.`);
   }
 
   return texts.join("\n").trim();
@@ -184,29 +190,116 @@ function checkRateLimit(req, res) {
   return true;
 }
 
-async function callOpenAI(input) {
-  if (!OPENAI_API_KEY) {
-    const error = new Error("Missing OPENAI_API_KEY.");
+function parseDataUrlImage(dataUrl) {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([\s\S]+)$/);
+
+  if (!match) {
+    const error = new Error("Please upload or capture a valid image.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return {
+    mimeType: match[1],
+    data: match[2]
+  };
+}
+
+function buildImageSchema() {
+  return {
+    type: "object",
+    properties: {
+      items: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string", description: "Short item name found in the image." },
+            category: {
+              type: "string",
+              description: `One of: ${CATEGORY_VALUES.join(", ")}.`
+            },
+            confidence: {
+              type: "string",
+              description: "High, Medium, or Low confidence."
+            },
+            reason: { type: "string", description: "Why the item belongs to that category." },
+            how_to_recycle: {
+              type: "array",
+              items: { type: "string" },
+              description: "Practical disposal or recycling steps."
+            }
+          },
+          required: ["name", "category", "confidence", "reason", "how_to_recycle"]
+        }
+      },
+      summary: { type: "string", description: "Overall guidance for the image." },
+      note: { type: "string", description: "Extra reminder or uncertainty note." }
+    },
+    required: ["items", "summary", "note"]
+  };
+}
+
+function buildTextSchema() {
+  return {
+    type: "object",
+    properties: {
+      reply_title: { type: "string", description: "A short answer title." },
+      category: {
+        type: "string",
+        description: `One of: ${CATEGORY_VALUES.join(", ")}.`
+      },
+      reason: { type: "string", description: "Why this category fits the item." },
+      how_to_recycle: {
+        type: "array",
+        items: { type: "string" },
+        description: "Practical disposal or recycling steps."
+      },
+      tips: {
+        type: "array",
+        items: { type: "string" },
+        description: "Helpful extra tips."
+      },
+      note: { type: "string", description: "Additional explanation or uncertainty note." }
+    },
+    required: ["reply_title", "category", "reason", "how_to_recycle", "tips", "note"]
+  };
+}
+
+async function callGemini(parts, responseSchema) {
+  if (!GEMINI_API_KEY) {
+    const error = new Error("Missing GEMINI_API_KEY.");
     error.statusCode = 500;
     throw error;
   }
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+    {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`
+      "x-goog-api-key": GEMINI_API_KEY
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
-      input
+      contents: [
+        {
+          role: "user",
+          parts
+        }
+      ],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseJsonSchema: responseSchema
+      }
     })
-  });
+    }
+  );
 
   const payload = await response.json();
 
   if (!response.ok) {
-    const message = payload?.error?.message || "OpenAI request failed.";
+    const message = payload?.error?.message || "Gemini request failed.";
     const error = new Error(message);
     error.statusCode = response.status;
     throw error;
@@ -227,45 +320,30 @@ async function handleImageClassification(req, res) {
     return;
   }
 
+  const image = parseDataUrlImage(imageDataUrl);
+
   const prompt = [
     "You are an English waste classification and recycling guidance assistant.",
     "Identify the main waste item or items in the image and classify them using the common four-bin system used in China.",
-    "The only allowed category values are: Recyclable Waste, Hazardous Waste, Food Waste, Residual Waste.",
+    `The only allowed category values are: ${CATEGORY_VALUES.join(", ")}.`,
     "If the image contains multiple items, return at most 3 main items.",
     "If recognition is uncertain, clearly explain that uncertainty in note.",
     "Respond in English only.",
-    "Return strict JSON and do not output any extra text.",
-    "Use this JSON structure:",
-    "{",
-    '  "items": [',
-    "    {",
-    '      "name": "Item name",',
-    '      "category": "Category name",',
-    '      "confidence": "High/Medium/Low",',
-    '      "reason": "Why it belongs to that category",',
-    '      "how_to_recycle": ["Step 1", "Step 2"]',
-    "    }",
-    "  ],",
-    '  "summary": "Overall guidance",',
-    '  "note": "Extra reminder, including that city rules may vary slightly"',
-    "}"
+    "Return concise, helpful results that follow the provided JSON schema."
   ].join("\n");
 
-  const result = await callOpenAI([
-    {
-      role: "user",
-      content: [
-        {
-          type: "input_text",
-          text: prompt
-        },
-        {
-          type: "input_image",
-          image_url: imageDataUrl
+  const result = await callGemini(
+    [
+      { text: prompt },
+      {
+        inlineData: {
+          mimeType: image.mimeType,
+          data: image.data
         }
-      ]
-    }
-  ]);
+      }
+    ],
+    buildImageSchema()
+  );
 
   sendJson(res, 200, result);
 }
@@ -285,34 +363,14 @@ async function handleTextConsultation(req, res) {
     "You are an English waste classification and recycling guidance assistant.",
     "The user will ask which category an item belongs to, or how it should be disposed of or recycled.",
     "Classify items using the common four-bin system used in China.",
-    "The only allowed category values are: Recyclable Waste, Hazardous Waste, Food Waste, Residual Waste.",
+    `The only allowed category values are: ${CATEGORY_VALUES.join(", ")}.`,
     "If the question cannot be answered uniquely, use note to ask for material, contamination level, or city-specific context.",
     "Respond in English only.",
-    "Return strict JSON and do not output any extra text.",
-    "Use this JSON structure:",
-    "{",
-    '  "reply_title": "A short title",',
-    '  "category": "Category name",',
-    '  "reason": "Why this category fits",',
-    '  "how_to_recycle": ["Step 1", "Step 2"],',
-    '  "tips": ["Extra tip 1", "Extra tip 2"],',
-    '  "note": "Additional explanation"',
-    "}",
-    "",
+    "Return concise, helpful results that follow the provided JSON schema.",
     `User question: ${question}`
   ].join("\n");
 
-  const result = await callOpenAI([
-    {
-      role: "user",
-      content: [
-        {
-          type: "input_text",
-          text: prompt
-        }
-      ]
-    }
-  ]);
+  const result = await callGemini([{ text: prompt }], buildTextSchema());
 
   sendJson(res, 200, result);
 }
@@ -347,8 +405,8 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && requestUrl.pathname === "/healthz") {
       sendJson(res, 200, {
         ok: true,
-        ready: Boolean(OPENAI_API_KEY),
-        model: OPENAI_MODEL,
+        ready: Boolean(GEMINI_API_KEY),
+        model: GEMINI_MODEL,
         timestamp: new Date().toISOString()
       });
       return;
@@ -356,8 +414,8 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && requestUrl.pathname === "/api/status") {
       sendJson(res, 200, {
-        ready: Boolean(OPENAI_API_KEY),
-        model: OPENAI_MODEL
+        ready: Boolean(GEMINI_API_KEY),
+        model: GEMINI_MODEL
       });
       return;
     }
@@ -405,6 +463,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   console.log(
-    `AI recycling guide is running on http://${HOST}:${PORT} (model: ${OPENAI_MODEL})`
+    `AI recycling guide is running on http://${HOST}:${PORT} (model: ${GEMINI_MODEL})`
   );
 });
