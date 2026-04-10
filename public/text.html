@@ -15,7 +15,7 @@
           <h1 class="feature-title">Text Help</h1>
           <p class="feature-copy">
             Ask AI about a material, an item, or the right disposal method, and it will return a
-            clear category recommendation with practical guidance.
+            Hong Kong-friendly route recommendation with practical preparation guidance.
           </p>
         </div>
       </header>
@@ -25,11 +25,11 @@
           <div class="panel-head">
             <div>
               <p class="panel-kicker">Waste Classification Q&amp;A</p>
-              <h2>Ask AI what category an item belongs to</h2>
+              <h2>Ask AI what route an item belongs to</h2>
             </div>
             <p class="panel-tip">
-              Examples: What category is a bubble tea cup? How should I throw away batteries?
-              Where do apple cores go?
+              Examples: Where should a bubble tea cup go in Hong Kong? Can I recycle a shampoo
+              bottle? What should I do with a fluorescent tube?
             </p>
           </div>
 
@@ -53,9 +53,21 @@
                 </button>
               </div>
             </div>
+
+            <div class="voice-option-row">
+              <label class="voice-toggle">
+                <input id="voice-auto-submit" type="checkbox" />
+                <span>Auto-submit after voice capture</span>
+              </label>
+              <div class="voice-live-indicator" id="voice-live-indicator">
+                Idle
+              </div>
+            </div>
+
             <div class="voice-status" id="voice-status">
               Voice input is ready when supported by your browser.
             </div>
+
             <textarea
               id="text-question"
               rows="5"
@@ -69,7 +81,7 @@
           <div class="qa-panel" id="text-result">
             <div class="empty-state">
               <span>Waiting for your question</span>
-              <small>Once you ask, AI will return the category and disposal guidance</small>
+              <small>Once you ask, AI will return the route, preparation steps, and reminders</small>
             </div>
           </div>
         </section>

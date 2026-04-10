@@ -15,7 +15,7 @@
           <h1 class="feature-title">Photo Scan</h1>
           <p class="feature-copy">
             Take a photo or upload an image, and AI will identify the main waste item and
-            recommend the right disposal steps.
+            recommend the right Hong Kong disposal route and preparation steps.
           </p>
         </div>
       </header>
@@ -31,6 +31,25 @@
               Use your camera or import an image. On public deployments, keep HTTPS enabled so
               camera permissions work correctly.
             </p>
+          </div>
+
+          <div class="capture-tips" id="capture-tips">
+            <article class="capture-tip-card">
+              <h3>One main item</h3>
+              <p>Keep the frame focused on a single bottle, box, battery, lamp, or food item.</p>
+            </article>
+            <article class="capture-tip-card">
+              <h3>Use bright light</h3>
+              <p>Natural light or a bright room helps AI recognise materials and labels better.</p>
+            </article>
+            <article class="capture-tip-card">
+              <h3>Show the full object</h3>
+              <p>Include the whole item, including caps, sleeves, lids, and obvious mixed parts.</p>
+            </article>
+            <article class="capture-tip-card">
+              <h3>Keep the background simple</h3>
+              <p>A plain table or floor works better than a crowded recycling bin or messy counter.</p>
+            </article>
           </div>
 
           <div class="vision-actions">
@@ -67,7 +86,7 @@
               <div class="result-body" id="image-result">
                 <div class="empty-state">
                   <span>Waiting for AI analysis</span>
-                  <small>The result will show the waste category, reasoning, and next steps</small>
+                  <small>The result will show the waste route, preparation, and next steps</small>
                 </div>
               </div>
             </div>
@@ -106,10 +125,14 @@
             <h3>Point the camera at the waste item</h3>
           </div>
           <button class="icon-btn" id="close-camera-btn" type="button" aria-label="Close camera">
-            ×
+            &times;
           </button>
         </div>
         <video id="camera-video" autoplay playsinline></video>
+        <div class="camera-tip-inline">
+          Keep the item steady, well-lit, and large enough to fill most of the frame before you
+          capture it.
+        </div>
         <div class="camera-actions">
           <button class="secondary-btn" id="fallback-camera-btn" type="button">
             Use Device Camera Instead

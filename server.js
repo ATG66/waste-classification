@@ -12,11 +12,19 @@ const RATE_LIMIT_MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 20
 const PUBLIC_DIR = path.join(__dirname, "public");
 const rateLimitStore = new Map();
 const CATEGORY_VALUES = [
-  "Recyclable Waste",
-  "Hazardous Waste",
+  "Paper",
+  "Plastics",
+  "Metals",
+  "Glass Containers",
+  "Beverage Cartons",
+  "Rechargeable Batteries",
+  "Lamps and Bulbs",
+  "Small Electrical Appliances",
+  "Regulated Electrical Equipment",
   "Food Waste",
-  "Residual Waste"
+  "General Waste"
 ];
+const CONFIDENCE_VALUES = ["High", "Medium", "Low"];
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -217,24 +225,52 @@ function buildImageSchema() {
             name: { type: "string", description: "Short item name found in the image." },
             category: {
               type: "string",
+              enum: CATEGORY_VALUES,
               description: `One of: ${CATEGORY_VALUES.join(", ")}.`
+            },
+            route: {
+              type: "string",
+              description: "A Hong Kong-friendly disposal or collection route."
             },
             confidence: {
               type: "string",
+              enum: CONFIDENCE_VALUES,
               description: "High, Medium, or Low confidence."
             },
             reason: { type: "string", description: "Why the item belongs to that category." },
-            how_to_recycle: {
+            preparation_steps: {
               type: "array",
               items: { type: "string" },
-              description: "Practical disposal or recycling steps."
+              description: "How the user should prepare the item before disposal or recycling."
+            },
+            drop_off_options: {
+              type: "array",
+              items: { type: "string" },
+              description: "Suggested drop-off or collection routes in Hong Kong."
+            },
+            warnings: {
+              type: "array",
+              items: { type: "string" },
+              description: "Important warnings or exceptions."
             }
           },
-          required: ["name", "category", "confidence", "reason", "how_to_recycle"]
+          required: [
+            "name",
+            "category",
+            "route",
+            "confidence",
+            "reason",
+            "preparation_steps",
+            "drop_off_options",
+            "warnings"
+          ]
         }
       },
       summary: { type: "string", description: "Overall guidance for the image." },
-      note: { type: "string", description: "Extra reminder or uncertainty note." }
+      note: {
+        type: "string",
+        description: "Extra reminder, especially when building-level arrangements may differ."
+      }
     },
     required: ["items", "summary", "note"]
   };
@@ -247,22 +283,41 @@ function buildTextSchema() {
       reply_title: { type: "string", description: "A short answer title." },
       category: {
         type: "string",
+        enum: CATEGORY_VALUES,
         description: `One of: ${CATEGORY_VALUES.join(", ")}.`
       },
-      reason: { type: "string", description: "Why this category fits the item." },
-      how_to_recycle: {
-        type: "array",
-        items: { type: "string" },
-        description: "Practical disposal or recycling steps."
+      route: {
+        type: "string",
+        description: "A Hong Kong-friendly disposal or collection route."
       },
-      tips: {
+      reason: { type: "string", description: "Why this category fits the item." },
+      preparation_steps: {
         type: "array",
         items: { type: "string" },
-        description: "Helpful extra tips."
+        description: "How to prepare the item before disposal or recycling."
+      },
+      drop_off_options: {
+        type: "array",
+        items: { type: "string" },
+        description: "Likely drop-off or collection routes in Hong Kong."
+      },
+      warnings: {
+        type: "array",
+        items: { type: "string" },
+        description: "Important warnings, contamination rules, or exceptions."
       },
       note: { type: "string", description: "Additional explanation or uncertainty note." }
     },
-    required: ["reply_title", "category", "reason", "how_to_recycle", "tips", "note"]
+    required: [
+      "reply_title",
+      "category",
+      "route",
+      "reason",
+      "preparation_steps",
+      "drop_off_options",
+      "warnings",
+      "note"
+    ]
   };
 }
 
@@ -323,10 +378,11 @@ async function handleImageClassification(req, res) {
   const image = parseDataUrlImage(imageDataUrl);
 
   const prompt = [
-    "You are an English waste classification and recycling guidance assistant.",
-    "Identify the main waste item or items in the image and classify them using the common four-bin system used in China.",
+    "You are an English recycling guidance assistant for Hong Kong households.",
+    "Identify the main waste item or items in the image and classify them using practical Hong Kong disposal and recycling routes.",
     `The only allowed category values are: ${CATEGORY_VALUES.join(", ")}.`,
     "If the image contains multiple items, return at most 3 main items.",
+    "Focus on real user actions: where it should go, how to prepare it, and what exceptions matter.",
     "If recognition is uncertain, clearly explain that uncertainty in note.",
     "Respond in English only.",
     "Return concise, helpful results that follow the provided JSON schema."
@@ -360,11 +416,11 @@ async function handleTextConsultation(req, res) {
   }
 
   const prompt = [
-    "You are an English waste classification and recycling guidance assistant.",
-    "The user will ask which category an item belongs to, or how it should be disposed of or recycled.",
-    "Classify items using the common four-bin system used in China.",
+    "You are an English recycling guidance assistant for Hong Kong households.",
+    "The user will ask which category an item belongs to, or how it should be disposed of or recycled in Hong Kong.",
     `The only allowed category values are: ${CATEGORY_VALUES.join(", ")}.`,
-    "If the question cannot be answered uniquely, use note to ask for material, contamination level, or city-specific context.",
+    "Prefer practical routes such as paper collection, plastics collection, rechargeable battery collection, food waste collection, or general waste.",
+    "If the question cannot be answered uniquely, use note to ask for material, contamination level, whether mixed parts can be separated, or whether the building has a dedicated collection channel.",
     "Respond in English only.",
     "Return concise, helpful results that follow the provided JSON schema.",
     `User question: ${question}`

@@ -1,305 +1,409 @@
 [
   {
-    "id": "newspaper-magazines",
+    "id": "newspapers-magazines",
     "name": "Newspapers and magazines",
     "category": "Paper",
-    "keywords": ["paper", "newspaper", "magazine", "flyers", "brochure"],
-    "summary": "Usually recyclable when the paper is clean and dry.",
+    "keywords": ["paper", "newspaper", "magazine", "flyer", "brochure"],
+    "summary": "Clean and dry paper can usually go into a paper recycling route in Hong Kong.",
     "route": "Paper collection",
-    "steps": [
-      "Keep the paper dry and free from food contamination.",
-      "Bundle or stack it neatly if needed.",
-      "Place it in a paper recycling point or a community collection channel."
+    "preparation_steps": [
+      "Keep the paper dry and free from food residue.",
+      "Bundle or stack it neatly if your collection point asks for that.",
+      "Remove obvious plastic wrapping when practical."
     ],
-    "note": "Wet, greasy, or heavily soiled paper should not go with clean paper recycling."
+    "drop_off_options": [
+      "Paper stream at GREEN@COMMUNITY or another local recycling point.",
+      "Building or estate paper recycling arrangement, if provided."
+    ],
+    "not_accepted": [
+      "Wet paper",
+      "Greasy paper",
+      "Paper mixed with food scraps"
+    ],
+    "if_no_route": "If no paper recycling channel is available, follow your building's ordinary refuse arrangement.",
+    "note": "Paper is one of the core recyclables commonly accepted by GREEN@COMMUNITY.",
+    "askPrompt": "How should I recycle newspapers and magazines in Hong Kong?"
   },
   {
     "id": "cardboard-box",
     "name": "Cardboard box",
     "category": "Paper",
-    "keywords": ["cardboard", "shipping box", "paper box", "delivery box"],
-    "summary": "Recyclable when flattened and kept reasonably clean.",
+    "keywords": ["cardboard", "delivery box", "shipping box", "paper box"],
+    "summary": "Flattened cardboard boxes are usually suitable for paper recycling when they are reasonably clean.",
     "route": "Paper collection",
-    "steps": [
+    "preparation_steps": [
       "Empty the box completely.",
       "Flatten it to save space.",
-      "Remove excess tape, foam, or plastic wrapping when practical."
+      "Remove foam, plastic wrap, or large tape sections when practical."
     ],
-    "note": "Greasy cardboard, such as heavily soiled food boxes, should not go into clean paper recycling."
-  },
-  {
-    "id": "office-paper",
-    "name": "Office paper and textbooks",
-    "category": "Paper",
-    "keywords": ["office paper", "book", "textbook", "worksheet", "notebook"],
-    "summary": "Generally recyclable if the pages are dry and mostly clean.",
-    "route": "Paper collection",
-    "steps": [
-      "Keep the paper dry.",
-      "Remove plastic covers, binders, or large metal accessories if possible.",
-      "Place the paper in a paper collection point."
+    "drop_off_options": [
+      "Paper stream at GREEN@COMMUNITY or a local recycling station.",
+      "Building paper recycling area, if available."
     ],
-    "note": "Mixed materials should be separated where practical."
-  },
-  {
-    "id": "receipts-thermal-paper",
-    "name": "Receipts and thermal paper",
-    "category": "General Waste",
-    "keywords": ["receipt", "thermal paper", "shopping slip", "cash register paper"],
-    "summary": "These are usually not treated the same way as ordinary recyclable paper.",
-    "route": "General waste",
-    "steps": [
-      "Keep them out of clean paper recycling.",
-      "Dispose of them with ordinary refuse."
+    "not_accepted": [
+      "Heavily greasy pizza boxes",
+      "Cardboard soaked with liquid"
     ],
-    "note": "Small coated or thermal paper slips are not a good fit for regular paper recycling streams."
-  },
-  {
-    "id": "tissue-paper",
-    "name": "Used tissue paper and paper towels",
-    "category": "General Waste",
-    "keywords": ["tissue", "paper towel", "napkin", "kitchen towel"],
-    "summary": "Usually not accepted in clean paper recycling.",
-    "route": "General waste",
-    "steps": [
-      "Wrap or bag them if needed.",
-      "Dispose of them with general waste."
-    ],
-    "note": "Once tissue products are used or contaminated, they should stay out of paper recycling."
+    "if_no_route": "If the box is badly contaminated or no paper stream is available, treat it as general waste.",
+    "note": "Cleaner cardboard is much easier for recyclers to handle.",
+    "askPrompt": "Can I recycle a cardboard delivery box in Hong Kong?"
   },
   {
     "id": "plastic-bottle",
     "name": "Plastic beverage bottle",
     "category": "Plastics",
     "keywords": ["plastic bottle", "water bottle", "drink bottle", "pet bottle"],
-    "summary": "Commonly recyclable when emptied and lightly rinsed.",
+    "summary": "Plastic beverage bottles can usually go into the plastics route after they are emptied and lightly rinsed.",
     "route": "Plastics collection",
-    "steps": [
-      "Empty the bottle completely.",
-      "Rinse it quickly if there is leftover liquid.",
-      "Remove caps and labels when practical, then place it in plastics recycling."
+    "preparation_steps": [
+      "Empty the bottle fully.",
+      "Rinse out leftover drink if needed.",
+      "Separate the cap and label when practical."
     ],
-    "note": "Cleaner and drier bottles are easier to recycle."
+    "drop_off_options": [
+      "Plastics stream at GREEN@COMMUNITY.",
+      "Building plastics recycling point, if available."
+    ],
+    "not_accepted": [
+      "Bottles still filled with liquid",
+      "Bottles heavily contaminated with food or chemicals"
+    ],
+    "if_no_route": "If there is no plastics collection channel nearby, keep the bottle dry and wait for a suitable collection point when possible.",
+    "note": "Plastics are commonly accepted at community collection points, but cleaner items have a better chance of being recycled.",
+    "askPrompt": "How should I recycle a plastic drink bottle in Hong Kong?"
   },
   {
-    "id": "detergent-shampoo-bottle",
-    "name": "Plastic shampoo or detergent bottle",
-    "category": "Plastics",
-    "keywords": ["detergent bottle", "shampoo bottle", "cleaning bottle", "plastic container"],
-    "summary": "Usually recyclable if the bottle is empty and reasonably clean.",
-    "route": "Plastics collection",
-    "steps": [
-      "Use up the contents first.",
-      "Rinse out heavy residue if possible.",
-      "Place the bottle in a plastics recycling stream."
+    "id": "bubble-tea-cup",
+    "name": "Bubble tea cup and lid",
+    "category": "General Waste",
+    "keywords": ["bubble tea", "milk tea cup", "drink cup", "plastic cup", "cup lid"],
+    "summary": "Disposable drink cups are often mixed-material items and are usually treated as general waste unless every part is clearly clean and separately accepted.",
+    "route": "General waste",
+    "preparation_steps": [
+      "Pour out any leftover drink and pearls.",
+      "Separate obvious clean parts only if your local collection point clearly accepts them.",
+      "Do not mix food-stained cups into clean recycling streams."
     ],
-    "note": "Heavily contaminated containers should be cleaned first; otherwise they may be rejected."
+    "drop_off_options": [
+      "Ordinary refuse arrangement for most mixed or contaminated cups."
+    ],
+    "not_accepted": [
+      "Cups with leftover drink",
+      "Cups still containing straws or food residue"
+    ],
+    "if_no_route": "Use ordinary refuse unless you can clearly separate clean recyclable parts that your local collection point accepts.",
+    "note": "Mixed plastic, seal film, and drink residue make takeaway cups harder to recycle than simple bottles.",
+    "askPrompt": "Where should I throw away a bubble tea cup in Hong Kong?"
   },
   {
-    "id": "takeaway-plastic-container",
+    "id": "clean-takeaway-container",
     "name": "Clean takeaway plastic container",
     "category": "Plastics",
-    "keywords": ["takeaway box", "plastic lunch box", "food container", "meal box"],
-    "summary": "Recyclable only if food residue is removed and the container is reasonably clean.",
+    "keywords": ["takeaway box", "meal box", "plastic food container", "lunch box"],
+    "summary": "A plastic takeaway container may go into the plastics route only if food residue and grease are removed well enough.",
     "route": "Plastics collection",
-    "steps": [
-      "Empty all leftover food.",
-      "Rinse the container if needed.",
-      "Separate mixed materials such as paper sleeves or metal cutlery before recycling."
+    "preparation_steps": [
+      "Remove all food scraps first.",
+      "Quickly rinse off sauce or grease.",
+      "Separate non-plastic parts if practical."
     ],
-    "note": "If the container is greasy or badly contaminated and cannot be cleaned, treat it as general waste."
-  },
-  {
-    "id": "plastic-bag",
-    "name": "Plastic bag",
-    "category": "Plastics",
-    "keywords": ["shopping bag", "plastic bag", "carrier bag", "soft plastic"],
-    "summary": "Clean plastic bags can usually go into plastics collection channels.",
-    "route": "Plastics collection",
-    "steps": [
-      "Shake out food scraps or rubbish first.",
-      "Keep the bag reasonably clean and dry.",
-      "Put it into a plastics collection point."
+    "drop_off_options": [
+      "Plastics stream at GREEN@COMMUNITY or a similar plastics collection point."
     ],
-    "note": "Dirty bags with food residue should not be mixed with clean plastics."
+    "not_accepted": [
+      "Greasy food boxes",
+      "Containers with strong food contamination"
+    ],
+    "if_no_route": "If the container stays greasy or there is no accepted plastics route, place it in general waste.",
+    "note": "Cleanliness matters more for food packaging than for bottles or cans.",
+    "askPrompt": "Can I recycle a clean takeaway plastic container in Hong Kong?"
   },
   {
     "id": "snack-packet",
     "name": "Snack packet or instant noodle pouch",
     "category": "General Waste",
     "keywords": ["chips bag", "snack packet", "instant noodle pouch", "composite packaging"],
-    "summary": "Composite packaging is usually not accepted in standard plastics recycling.",
+    "summary": "Multi-layer snack packaging is usually not suitable for standard plastics recycling.",
     "route": "General waste",
-    "steps": [
+    "preparation_steps": [
       "Empty the packet fully.",
-      "Dispose of it with general waste unless a specialised collection route is available."
+      "Keep it out of normal plastics recycling."
     ],
-    "note": "Multi-layer packaging is much harder to recycle than simple plastic containers."
+    "drop_off_options": [
+      "Ordinary refuse arrangement."
+    ],
+    "not_accepted": [
+      "Standard plastics stream"
+    ],
+    "if_no_route": "Treat this as general waste unless a specialist soft-plastic or composite-packaging programme is explicitly available.",
+    "note": "Composite packaging is much harder to recycle than simple plastic bottles or containers.",
+    "askPrompt": "Should I recycle a snack packet in Hong Kong?"
   },
   {
     "id": "aluminium-can",
     "name": "Aluminium can",
     "category": "Metals",
     "keywords": ["aluminium can", "soda can", "drink can"],
-    "summary": "A common recyclable metal item once emptied and rinsed.",
+    "summary": "A drink can usually fits the metals route once it is empty and lightly rinsed.",
     "route": "Metals collection",
-    "steps": [
+    "preparation_steps": [
       "Empty the can completely.",
-      "Rinse out remaining drink.",
-      "Place it in a metals recycling point."
+      "Rinse out leftover drink.",
+      "Keep it reasonably dry."
     ],
-    "note": "Crushing the can is optional, but keeping it clean helps."
-  },
-  {
-    "id": "tin-can",
-    "name": "Tin can or metal food can",
-    "category": "Metals",
-    "keywords": ["tin can", "metal can", "food can", "milk powder tin"],
-    "summary": "Usually recyclable after it has been emptied and cleaned.",
-    "route": "Metals collection",
-    "steps": [
-      "Empty all food residue.",
-      "Rinse the can if needed.",
-      "Place it into a metals recycling point."
+    "drop_off_options": [
+      "Metals stream at GREEN@COMMUNITY or a local metals collection point."
     ],
-    "note": "Sharp edges should be handled carefully."
+    "not_accepted": [
+      "Cans full of liquid",
+      "Sharp cans with hazardous residue"
+    ],
+    "if_no_route": "Keep it dry and use the next available metals collection channel when possible.",
+    "note": "Metals are one of the common community recycling streams in Hong Kong.",
+    "askPrompt": "How should I recycle an aluminium can in Hong Kong?"
   },
   {
     "id": "glass-bottle",
     "name": "Glass beverage bottle",
-    "category": "Glass",
-    "keywords": ["glass bottle", "beer bottle", "wine bottle", "drink bottle"],
-    "summary": "Usually recyclable through glass bottle collection channels.",
-    "route": "Glass bottle collection",
-    "steps": [
-      "Empty and rinse the bottle.",
-      "Remove caps, pumps, or non-glass parts when practical.",
-      "Place the bottle in a glass bottle collection point."
+    "category": "Glass Containers",
+    "keywords": ["glass bottle", "beer bottle", "wine bottle", "glass drink bottle"],
+    "summary": "Container glass such as beverage bottles normally goes into the glass container route after emptying and rinsing.",
+    "route": "Glass container collection",
+    "preparation_steps": [
+      "Empty the bottle fully.",
+      "Rinse out any leftover liquid.",
+      "Remove caps or pumps when practical."
     ],
-    "note": "This guidance is for container glass such as beverage bottles, not for mirrors or ceramics."
+    "drop_off_options": [
+      "Glass bottle collection bins or a recognised community collection point."
+    ],
+    "not_accepted": [
+      "Mirrors",
+      "Ceramics",
+      "Heat-resistant glass cookware"
+    ],
+    "if_no_route": "If no glass container collection point is available nearby, follow your local refuse arrangement carefully and protect others from sharp edges.",
+    "note": "Hong Kong glass collection routes focus on container glass rather than every glass-like item.",
+    "askPrompt": "Where should I recycle a glass bottle in Hong Kong?"
   },
   {
-    "id": "glass-jar",
-    "name": "Glass food jar or sauce bottle",
-    "category": "Glass",
-    "keywords": ["glass jar", "sauce bottle", "jam jar", "food jar"],
-    "summary": "Usually recyclable when the container glass is empty and clean.",
-    "route": "Glass bottle collection",
-    "steps": [
-      "Empty the contents fully.",
-      "Rinse out sauces or food residue.",
-      "Remove lids when practical and place the glass in collection."
-    ],
-    "note": "Ceramics, Pyrex, and mirrors should not be mixed with container-glass recycling."
-  },
-  {
-    "id": "mirror-ceramic",
+    "id": "mirror-or-ceramic",
     "name": "Mirror or broken ceramic mug",
     "category": "General Waste",
-    "keywords": ["mirror", "ceramic", "mug", "plate", "bowl"],
-    "summary": "These are usually not accepted in ordinary glass bottle recycling.",
+    "keywords": ["mirror", "ceramic", "mug", "plate", "bowl", "porcelain"],
+    "summary": "Mirrors and ceramics should stay out of container-glass recycling and usually go with general waste.",
     "route": "General waste",
-    "steps": [
-      "Wrap sharp pieces safely before disposal.",
+    "preparation_steps": [
+      "Wrap sharp edges safely before disposal.",
       "Keep them out of bottle-glass recycling."
     ],
-    "note": "Bottle-glass programmes are meant for container glass, not ceramics or mirrors."
+    "drop_off_options": [
+      "Ordinary refuse arrangement."
+    ],
+    "not_accepted": [
+      "Glass container collection"
+    ],
+    "if_no_route": "Use ordinary refuse and wrap sharp pieces carefully.",
+    "note": "Bottle glass programmes are intended for containers rather than mirrors or ceramics.",
+    "askPrompt": "Can I recycle a mirror or broken ceramic mug in Hong Kong?"
   },
   {
     "id": "beverage-carton",
-    "name": "Beverage carton",
+    "name": "Milk or juice carton",
     "category": "Beverage Cartons",
     "keywords": ["carton", "milk carton", "juice carton", "tetra pak"],
-    "summary": "Can be recycled through dedicated carton collection routes when cleaned and flattened.",
-    "route": "Dedicated carton collection",
-    "steps": [
+    "summary": "Beverage cartons usually need their own dedicated collection route instead of being mixed with ordinary paper.",
+    "route": "Beverage carton collection",
+    "preparation_steps": [
       "Empty the carton fully.",
       "Rinse it, drain it, and flatten it.",
-      "Remove straws or extra wrapping when practical, then use a carton recycling channel."
+      "Remove straws or extra wrapping when practical."
     ],
-    "note": "Cartons need a dedicated collection route and should not be treated exactly like ordinary paper."
+    "drop_off_options": [
+      "Dedicated beverage carton stream at GREEN@COMMUNITY or a recognised collection partner."
+    ],
+    "not_accepted": [
+      "Ordinary paper-only collection points that do not mention cartons"
+    ],
+    "if_no_route": "If you do not have access to a dedicated carton collection route, follow your local refuse arrangement.",
+    "note": "Cartons are accepted by GREEN@COMMUNITY, but they should not be treated exactly like ordinary paper.",
+    "askPrompt": "How should I recycle a milk or juice carton in Hong Kong?"
   },
   {
     "id": "rechargeable-battery",
     "name": "Rechargeable battery or power bank",
-    "category": "Special Recycling",
+    "category": "Rechargeable Batteries",
     "keywords": ["rechargeable battery", "power bank", "lithium battery", "portable charger"],
-    "summary": "Use a dedicated rechargeable battery or special recycling collection route.",
-    "route": "Special recycling",
-    "steps": [
-      "Do not place it in ordinary recycling bins.",
+    "summary": "Rechargeable batteries and power banks should go through a dedicated battery collection route.",
+    "route": "Rechargeable battery collection",
+    "preparation_steps": [
+      "Do not place it in general recycling bins.",
       "Tape exposed terminals when practical.",
-      "Bring it to a suitable battery or community collection point."
+      "Keep damaged batteries separated and handled carefully."
     ],
-    "note": "Damaged, swollen, or leaking batteries should be handled with extra care."
+    "drop_off_options": [
+      "Rechargeable battery stream at GREEN@COMMUNITY or another recognised battery collection point."
+    ],
+    "not_accepted": [
+      "Ordinary paper, plastics, metals, or glass streams"
+    ],
+    "if_no_route": "Store it safely until you can access a proper rechargeable battery collection point.",
+    "note": "Rechargeable batteries are one of the common dedicated recycling categories in Hong Kong.",
+    "askPrompt": "Where should I recycle a rechargeable battery or power bank in Hong Kong?"
   },
   {
     "id": "disposable-battery",
     "name": "Disposable household battery",
     "category": "General Waste",
-    "keywords": ["alkaline battery", "disposable battery", "aa battery", "aaa battery"],
-    "summary": "These are not usually handled the same way as rechargeable batteries.",
+    "keywords": ["alkaline battery", "aa battery", "aaa battery", "disposable battery"],
+    "summary": "Disposable household batteries are not handled the same way as rechargeable batteries in most community collection schemes.",
     "route": "General waste",
-    "steps": [
+    "preparation_steps": [
       "Keep them separate from rechargeable batteries.",
-      "Follow ordinary household disposal arrangements unless a dedicated local programme is available."
+      "Follow your ordinary refuse arrangement unless a dedicated local programme says otherwise."
     ],
-    "note": "Do not assume every battery collection point accepts disposable household batteries."
+    "drop_off_options": [
+      "Ordinary refuse arrangement unless a specific local battery scheme accepts them."
+    ],
+    "not_accepted": [
+      "Rechargeable battery collection points, unless they clearly accept disposable batteries"
+    ],
+    "if_no_route": "Do not assume every battery bin accepts disposable batteries; follow the local instruction at the collection point.",
+    "note": "In Hong Kong, community routes commonly highlight rechargeable batteries specifically.",
+    "askPrompt": "How should I dispose of a disposable household battery in Hong Kong?"
   },
   {
-    "id": "fluorescent-lamp",
+    "id": "fluorescent-tube",
     "name": "Fluorescent tube or compact fluorescent lamp",
-    "category": "Special Recycling",
+    "category": "Lamps and Bulbs",
     "keywords": ["fluorescent tube", "cfl", "energy saving bulb", "lamp"],
-    "summary": "Use a dedicated lamp collection route instead of regular bins.",
-    "route": "Special recycling",
-    "steps": [
+    "summary": "Fluorescent lamps and tubes should use a dedicated lamp collection route rather than normal bins.",
+    "route": "Lamp and bulb collection",
+    "preparation_steps": [
       "Keep the lamp unbroken if possible.",
-      "Return it through a suitable collection channel for fluorescent lamps.",
-      "Avoid mixing it with ordinary glass or general waste unless no special route is available."
+      "Handle it carefully and avoid mixing it with container glass.",
+      "Pack broken pieces safely if breakage happens."
     ],
-    "note": "These lamps need more careful handling than ordinary household waste."
+    "drop_off_options": [
+      "GREEN@COMMUNITY lamp collection or another recognised fluorescent-lamp collection route."
+    ],
+    "not_accepted": [
+      "Glass bottle collection",
+      "Ordinary mixed recycling bins"
+    ],
+    "if_no_route": "Keep it safe and intact until you can reach a suitable collection point.",
+    "note": "Fluorescent lamps and tubes are accepted in dedicated collection channels because they need more careful handling.",
+    "askPrompt": "Where should I bring a fluorescent tube in Hong Kong?"
+  },
+  {
+    "id": "led-light-bulb",
+    "name": "Household LED light bulb",
+    "category": "Lamps and Bulbs",
+    "keywords": ["led bulb", "light bulb", "household bulb"],
+    "summary": "Household LED light bulbs can be taken to accepted community recycling channels instead of bottle-glass bins.",
+    "route": "Lamp and bulb collection",
+    "preparation_steps": [
+      "Keep the bulb unbroken if possible.",
+      "Do not place it in glass bottle recycling.",
+      "Wrap it lightly if you need to carry it safely."
+    ],
+    "drop_off_options": [
+      "GREEN@COMMUNITY collection where household LED bulbs are accepted."
+    ],
+    "not_accepted": [
+      "Glass container collection"
+    ],
+    "if_no_route": "If your local collection point does not accept it, follow the posted instruction or use ordinary refuse with safe wrapping.",
+    "note": "LED bulbs are treated differently from glass bottles and should not go into container-glass recycling.",
+    "askPrompt": "Can I recycle an LED light bulb in Hong Kong?"
   },
   {
     "id": "small-electrical-appliance",
     "name": "Small electrical appliance",
-    "category": "Special Recycling",
-    "keywords": ["fan", "hair dryer", "kettle", "rice cooker", "small appliance", "toaster"],
-    "summary": "Use a designated collection channel for recyclable small electrical appliances.",
-    "route": "Special recycling",
-    "steps": [
+    "category": "Small Electrical Appliances",
+    "keywords": ["fan", "hair dryer", "kettle", "rice cooker", "toaster", "small appliance"],
+    "summary": "Small household appliances usually go through a dedicated small electrical appliance route.",
+    "route": "Small electrical appliance collection",
+    "preparation_steps": [
       "Unplug the appliance and keep it dry.",
       "Bundle loose wires if practical.",
-      "Take it to a suitable community collection channel for small electrical appliances."
+      "Empty any water or food residue before drop-off."
     ],
-    "note": "Acceptance can vary by item type, especially for specialised medical or personal-care devices."
+    "drop_off_options": [
+      "GREEN@COMMUNITY or another recognised small electrical appliance collection point."
+    ],
+    "not_accepted": [
+      "Paper, plastics, metals, or general recycling bins"
+    ],
+    "if_no_route": "Keep the appliance until you can access a proper e-waste collection channel.",
+    "note": "Small appliances have their own recycling route because they contain mixed materials and electronic parts.",
+    "askPrompt": "How should I recycle a small electrical appliance in Hong Kong?"
   },
   {
     "id": "regulated-electrical-equipment",
-    "name": "Large electrical appliance or regulated e-waste",
-    "category": "Special Recycling",
-    "keywords": ["tv", "fridge", "washing machine", "air conditioner", "computer", "monitor"],
-    "summary": "Use seller take-back or an approved collection service instead of ordinary disposal.",
-    "route": "Special recycling service",
-    "steps": [
-      "Do not leave the item in ordinary recycling bins.",
-      "Arrange seller removal or an approved collection service where available.",
-      "Follow the relevant e-waste collection route for large or regulated equipment."
+    "name": "Computer, monitor, fridge, washer, or air conditioner",
+    "category": "Regulated Electrical Equipment",
+    "keywords": ["computer", "monitor", "fridge", "washing machine", "air conditioner", "tv"],
+    "summary": "Regulated electrical equipment should use seller take-back or an approved e-waste collection service.",
+    "route": "Regulated e-waste service",
+    "preparation_steps": [
+      "Do not place the item in ordinary recycling bins.",
+      "Arrange seller removal or an approved collection service when available.",
+      "Back up and erase data from computers or phones before handover if relevant."
     ],
-    "note": "Large or regulated electrical equipment usually needs a dedicated removal arrangement."
+    "drop_off_options": [
+      "Seller take-back service.",
+      "Approved regulated e-waste collection service such as ALBA IWS."
+    ],
+    "not_accepted": [
+      "Ordinary building recycling bins"
+    ],
+    "if_no_route": "Arrange an approved collection service instead of leaving the item in a refuse area.",
+    "note": "Large and regulated electrical equipment in Hong Kong usually needs a dedicated removal arrangement.",
+    "askPrompt": "How should I dispose of a computer or fridge in Hong Kong?"
   },
   {
     "id": "food-scraps",
     "name": "Food scraps and fruit peels",
     "category": "Food Waste",
-    "keywords": ["food waste", "fruit peels", "leftovers", "vegetable scraps"],
-    "summary": "Keep food scraps separate from dry recyclables and use food-waste collection if available.",
+    "keywords": ["food waste", "fruit peel", "vegetable scrap", "leftover food"],
+    "summary": "Food waste should stay separate from dry recyclables and use a food-waste route when your building or district provides one.",
     "route": "Food waste collection",
-    "steps": [
-      "Drain excess liquid first when possible.",
-      "Use a food-waste collection point if your building or estate provides one.",
-      "Otherwise follow your building’s ordinary refuse arrangement."
+    "preparation_steps": [
+      "Drain extra liquid first when possible.",
+      "Keep food waste separate from clean recyclables.",
+      "Follow your building's food-waste container rules if one is provided."
     ],
-    "note": "Food waste collection availability can vary by building and district."
+    "drop_off_options": [
+      "Building or estate food-waste bin, if available.",
+      "Food Waste Recycling Point or another official food-waste programme when available."
+    ],
+    "not_accepted": [
+      "Dry recycling streams such as paper, plastics, metals, or glass"
+    ],
+    "if_no_route": "If your building has no food-waste collection, follow the ordinary refuse arrangement and avoid mixing food with recyclables.",
+    "note": "Food-waste collection availability still varies by building and district in Hong Kong.",
+    "askPrompt": "Where should I put food scraps in Hong Kong?"
+  },
+  {
+    "id": "tissue-paper",
+    "name": "Used tissue paper and paper towels",
+    "category": "General Waste",
+    "keywords": ["tissue", "paper towel", "napkin", "kitchen towel"],
+    "summary": "Used tissues and paper towels should normally stay out of clean paper recycling.",
+    "route": "General waste",
+    "preparation_steps": [
+      "Bag them if they are wet or messy.",
+      "Keep them out of clean paper recycling."
+    ],
+    "drop_off_options": [
+      "Ordinary refuse arrangement."
+    ],
+    "not_accepted": [
+      "Paper recycling stream"
+    ],
+    "if_no_route": "Treat them as general waste.",
+    "note": "Used tissue products are too contaminated for normal paper recycling.",
+    "askPrompt": "Can I recycle used tissue paper in Hong Kong?"
   }
 ]
