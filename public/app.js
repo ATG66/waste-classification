@@ -1,8 +1,13 @@
 const STORAGE_KEYS = {
   image: "recycle-compass:image-history",
-  text: "recycle-compass:text-history"
+  text: "recycle-compass:text-history",
+  reminders: "recycle-compass:reminders"
 };
 const MAX_HISTORY_ITEMS = 8;
+const MAX_REMINDER_OVERVIEW_ITEMS = 3;
+const REMINDER_DUE_WINDOW_MS = 24 * 60 * 60 * 1000;
+const REMINDER_CHECK_INTERVAL_MS = 60 * 1000;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const state = {
   imageDataUrl: "",
@@ -49,6 +54,27 @@ const commonItemsFilters = document.getElementById("common-items-filters");
 const commonItemsGrid = document.getElementById("common-items-grid");
 const commonItemsCount = document.getElementById("common-items-count");
 const commonItemDetail = document.getElementById("common-item-detail");
+const reminderOverviewTitle = document.getElementById("reminder-overview-title");
+const reminderOverviewCopy = document.getElementById("reminder-overview-copy");
+const reminderOverviewCount = document.getElementById("reminder-overview-count");
+const reminderOverviewNext = document.getElementById("reminder-overview-next");
+const reminderOverviewList = document.getElementById("reminder-overview-list");
+const reminderPermissionChip = document.getElementById("reminder-permission-chip");
+const reminderForm = document.getElementById("reminder-form");
+const reminderTemplateSelect = document.getElementById("reminder-template");
+const reminderTitleInput = document.getElementById("reminder-title");
+const reminderSummaryInput = document.getElementById("reminder-summary");
+const reminderFrequencySelect = document.getElementById("reminder-frequency");
+const reminderWeekdayField = document.getElementById("reminder-weekday-field");
+const reminderWeekdaySelect = document.getElementById("reminder-weekday");
+const reminderMonthdayField = document.getElementById("reminder-monthday-field");
+const reminderMonthdaySelect = document.getElementById("reminder-monthday");
+const reminderTimeInput = document.getElementById("reminder-time");
+const reminderFormStatus = document.getElementById("reminder-form-status");
+const reminderResetBtn = document.getElementById("reset-reminder-form");
+const reminderNotificationBtn = document.getElementById("reminder-notification-btn");
+const reminderNotificationStatus = document.getElementById("reminder-notification-status");
+const remindersList = document.getElementById("reminders-list");
 
 const hasVisionUI =
   imageUploadInput &&
@@ -75,6 +101,29 @@ const hasCommonItemsUI =
   commonItemsGrid &&
   commonItemsCount;
 const hasCommonItemDetailUI = Boolean(commonItemDetail);
+const hasReminderOverviewUI =
+  reminderOverviewTitle &&
+  reminderOverviewCopy &&
+  reminderOverviewCount &&
+  reminderOverviewNext &&
+  reminderOverviewList &&
+  reminderPermissionChip;
+const hasRemindersPageUI =
+  reminderForm &&
+  reminderTemplateSelect &&
+  reminderTitleInput &&
+  reminderSummaryInput &&
+  reminderFrequencySelect &&
+  reminderWeekdayField &&
+  reminderWeekdaySelect &&
+  reminderMonthdayField &&
+  reminderMonthdaySelect &&
+  reminderTimeInput &&
+  reminderFormStatus &&
+  reminderResetBtn &&
+  reminderNotificationBtn &&
+  reminderNotificationStatus &&
+  remindersList;
 
 const commonItemsState = {
   items: [],
@@ -92,6 +141,80 @@ const voiceState = {
   baseText: "",
   finalTranscript: ""
 };
+let reminderIntervalId = null;
+
+const REMINDER_TEMPLATES = [
+  {
+    id: "paper-cardboard",
+    title: "Weekly Paper and Cardboard Check",
+    summary:
+      "Flatten clean paper boxes and cardboard, keep them dry, and set them aside for your next paper collection run.",
+    frequency: "weekly",
+    dayOfWeek: 6,
+    dayOfMonth: 1,
+    time: "19:00"
+  },
+  {
+    id: "clean-plastics",
+    title: "Clean Plastics Before Drop-off",
+    summary:
+      "Rinse drink bottles and rigid plastic containers, remove obvious leftovers, and keep recyclable plastics ready for collection.",
+    frequency: "weekly",
+    dayOfWeek: 3,
+    dayOfMonth: 1,
+    time: "20:00"
+  },
+  {
+    id: "battery-dropoff",
+    title: "Rechargeable Battery Drop-off",
+    summary:
+      "Gather rechargeable batteries in one safe spot, tape damaged terminals if needed, and bring them to a designated collection point.",
+    frequency: "biweekly",
+    dayOfWeek: 6,
+    dayOfMonth: 1,
+    time: "18:30"
+  },
+  {
+    id: "glass-bottles",
+    title: "Glass Bottle Collection Reminder",
+    summary:
+      "Empty glass bottles, give them a quick rinse, and check whether your building or nearby collection point accepts them this week.",
+    frequency: "weekly",
+    dayOfWeek: 0,
+    dayOfMonth: 1,
+    time: "16:00"
+  },
+  {
+    id: "ewaste",
+    title: "Monthly E-waste Sort-out",
+    summary:
+      "Check for old chargers, small appliances, lamps, or other electronics that need a special Hong Kong collection route.",
+    frequency: "monthly",
+    dayOfWeek: 6,
+    dayOfMonth: 1,
+    time: "11:00"
+  },
+  {
+    id: "food-waste",
+    title: "Food Waste Prep Reminder",
+    summary:
+      "Empty kitchen scraps regularly, keep them sealed, and follow your estate or nearby food waste arrangement before odour builds up.",
+    frequency: "weekly",
+    dayOfWeek: 2,
+    dayOfMonth: 1,
+    time: "21:00"
+  }
+];
+
+const REMINDER_WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday"
+];
 const FEEDBACK_CATEGORY_OPTIONS = [
   "Paper",
   "Plastics",
@@ -429,6 +552,693 @@ function saveTextHistory(question, data) {
 
 function clearHistory(key) {
   window.localStorage.removeItem(key);
+}
+
+function readReminders() {
+  const raw = window.localStorage.getItem(STORAGE_KEYS.reminders);
+  if (!raw) {
+    return [];
+  }
+
+  const parsed = safeJsonParse(raw, []);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+function writeReminders(items) {
+  window.localStorage.setItem(STORAGE_KEYS.reminders, JSON.stringify(items));
+}
+
+function parseTimeInput(timeString) {
+  const [hoursText = "19", minutesText = "00"] = String(timeString || "19:00").split(":");
+  return {
+    hours: Math.max(0, Math.min(23, Number.parseInt(hoursText, 10) || 0)),
+    minutes: Math.max(0, Math.min(59, Number.parseInt(minutesText, 10) || 0))
+  };
+}
+
+function formatReminderTime(timeString) {
+  const sample = new Date();
+  const { hours, minutes } = parseTimeInput(timeString);
+  sample.setHours(hours, minutes, 0, 0);
+
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(sample);
+}
+
+function getDaysInMonth(year, monthIndex) {
+  return new Date(year, monthIndex + 1, 0).getDate();
+}
+
+function createMonthlyOccurrence(year, monthIndex, dayOfMonth, timeString) {
+  const { hours, minutes } = parseTimeInput(timeString);
+  const safeDay = Math.min(
+    Math.max(1, Number.parseInt(String(dayOfMonth || 1), 10) || 1),
+    getDaysInMonth(year, monthIndex)
+  );
+
+  return new Date(year, monthIndex, safeDay, hours, minutes, 0, 0);
+}
+
+function calculateInitialReminderStartAt(frequency, dayOfWeek, dayOfMonth, timeString) {
+  const now = new Date();
+  const { hours, minutes } = parseTimeInput(timeString);
+
+  if (frequency === "monthly") {
+    let candidate = createMonthlyOccurrence(now.getFullYear(), now.getMonth(), dayOfMonth, timeString);
+
+    if (candidate <= now) {
+      candidate = createMonthlyOccurrence(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        dayOfMonth,
+        timeString
+      );
+    }
+
+    return candidate;
+  }
+
+  const candidate = new Date(now);
+  candidate.setHours(hours, minutes, 0, 0);
+  const offset = (Number(dayOfWeek) - candidate.getDay() + 7) % 7;
+  candidate.setDate(candidate.getDate() + offset);
+
+  if (candidate <= now) {
+    candidate.setDate(candidate.getDate() + 7);
+  }
+
+  return candidate;
+}
+
+function getReminderTiming(reminder, reference = new Date()) {
+  const startAt = new Date(reminder?.startAt || "");
+  if (Number.isNaN(startAt.getTime())) {
+    return {
+      currentOccurrence: null,
+      nextDue: null
+    };
+  }
+
+  if (startAt > reference) {
+    return {
+      currentOccurrence: null,
+      nextDue: startAt
+    };
+  }
+
+  if (reminder.frequency === "monthly") {
+    let currentOccurrence = startAt;
+    let nextDue = createMonthlyOccurrence(
+      startAt.getFullYear(),
+      startAt.getMonth() + 1,
+      reminder.dayOfMonth,
+      reminder.time
+    );
+
+    while (nextDue <= reference) {
+      currentOccurrence = nextDue;
+      nextDue = createMonthlyOccurrence(
+        nextDue.getFullYear(),
+        nextDue.getMonth() + 1,
+        reminder.dayOfMonth,
+        reminder.time
+      );
+    }
+
+    return { currentOccurrence, nextDue };
+  }
+
+  const intervalMs = reminder.frequency === "biweekly" ? DAY_IN_MS * 14 : DAY_IN_MS * 7;
+  let currentOccurrence = startAt;
+  let nextDue = new Date(startAt.getTime() + intervalMs);
+
+  while (nextDue <= reference) {
+    currentOccurrence = nextDue;
+    nextDue = new Date(nextDue.getTime() + intervalMs);
+  }
+
+  return { currentOccurrence, nextDue };
+}
+
+function isReminderDue(reminder, reference = new Date()) {
+  if (!reminder?.active) {
+    return false;
+  }
+
+  const { currentOccurrence } = getReminderTiming(reminder, reference);
+  if (!currentOccurrence) {
+    return false;
+  }
+
+  const difference = reference.getTime() - currentOccurrence.getTime();
+  return difference >= 0 && difference <= REMINDER_DUE_WINDOW_MS;
+}
+
+function getReminderNotificationPermission() {
+  if (!("Notification" in window)) {
+    return "unsupported";
+  }
+
+  return Notification.permission;
+}
+
+function getReminderTemplate(templateId) {
+  return REMINDER_TEMPLATES.find((template) => template.id === templateId) || REMINDER_TEMPLATES[0];
+}
+
+function formatReminderFrequency(frequency) {
+  if (frequency === "biweekly") {
+    return "Every 2 weeks";
+  }
+
+  if (frequency === "monthly") {
+    return "Every month";
+  }
+
+  return "Every week";
+}
+
+function getReminderScheduleLabel(reminder) {
+  if (reminder.frequency === "monthly") {
+    return `${formatReminderFrequency(reminder.frequency)} · Day ${reminder.dayOfMonth} · ${formatReminderTime(reminder.time)}`;
+  }
+
+  return `${formatReminderFrequency(reminder.frequency)} · ${REMINDER_WEEKDAYS[Number(reminder.dayOfWeek) || 0]} · ${formatReminderTime(reminder.time)}`;
+}
+
+function getReminderPermissionLabel(permission = getReminderNotificationPermission()) {
+  if (permission === "granted") {
+    return "Alerts ready";
+  }
+
+  if (permission === "denied") {
+    return "Alerts blocked";
+  }
+
+  if (permission === "unsupported") {
+    return "Alerts unavailable";
+  }
+
+  return "Alerts optional";
+}
+
+function getReminderPermissionMessage(permission = getReminderNotificationPermission()) {
+  if (permission === "granted") {
+    return "Browser alerts are enabled. Recycle Compass can raise reminder notifications while this site stays open in a tab.";
+  }
+
+  if (permission === "denied") {
+    return "Browser alerts are blocked for now. You can still use homepage reminders, or change the browser permission later.";
+  }
+
+  if (permission === "unsupported") {
+    return "This browser does not support notification alerts here, so reminders will stay inside the site.";
+  }
+
+  return "You can enable browser alerts for gentle reminder pop-ups while this site stays open in a tab.";
+}
+
+function getSortedReminderEntries(reference = new Date()) {
+  return readReminders()
+    .map((reminder) => {
+      const timing = getReminderTiming(reminder, reference);
+      return {
+        ...reminder,
+        timing,
+        dueNow: isReminderDue(reminder, reference)
+      };
+    })
+    .sort((left, right) => {
+      if (left.active !== right.active) {
+        return left.active ? -1 : 1;
+      }
+
+      const leftTime = left.timing.nextDue?.getTime() || Number.MAX_SAFE_INTEGER;
+      const rightTime = right.timing.nextDue?.getTime() || Number.MAX_SAFE_INTEGER;
+      return leftTime - rightTime;
+    });
+}
+
+function setReminderFormStatus(message, tone = "default") {
+  if (!reminderFormStatus) return;
+
+  reminderFormStatus.textContent = message;
+  reminderFormStatus.classList.remove("is-success", "is-error");
+
+  if (tone === "success") {
+    reminderFormStatus.classList.add("is-success");
+  }
+
+  if (tone === "error") {
+    reminderFormStatus.classList.add("is-error");
+  }
+}
+
+function renderReminderPermissionState() {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  const permission = getReminderNotificationPermission();
+  reminderNotificationStatus.textContent = getReminderPermissionMessage(permission);
+
+  if (permission === "granted") {
+    reminderNotificationBtn.textContent = "Browser Alerts Enabled";
+    reminderNotificationBtn.disabled = true;
+    return;
+  }
+
+  if (permission === "unsupported") {
+    reminderNotificationBtn.textContent = "Notifications Not Supported";
+    reminderNotificationBtn.disabled = true;
+    return;
+  }
+
+  if (permission === "denied") {
+    reminderNotificationBtn.textContent = "Change Alert Permission in Browser Settings";
+    reminderNotificationBtn.disabled = true;
+    return;
+  }
+
+  reminderNotificationBtn.disabled = false;
+  reminderNotificationBtn.textContent = "Enable Browser Alerts";
+}
+
+function renderReminderOverview(reference = new Date()) {
+  if (!hasReminderOverviewUI) {
+    return;
+  }
+
+  const reminderEntries = getSortedReminderEntries(reference);
+  const activeEntries = reminderEntries.filter((entry) => entry.active);
+  const dueEntries = activeEntries.filter((entry) => entry.dueNow);
+  const upcomingEntries = activeEntries.slice(0, MAX_REMINDER_OVERVIEW_ITEMS);
+  const nextEntry = activeEntries[0] || null;
+  const permission = getReminderNotificationPermission();
+
+  reminderPermissionChip.textContent = getReminderPermissionLabel(permission);
+  reminderOverviewCount.textContent = `${activeEntries.length} active reminder${activeEntries.length === 1 ? "" : "s"}`;
+
+  if (activeEntries.length === 0) {
+    const pausedEntries = reminderEntries.filter((entry) => !entry.active);
+    const hasPausedEntries = pausedEntries.length > 0;
+
+    reminderOverviewTitle.textContent = hasPausedEntries
+      ? "No active reminders right now"
+      : "No reminders set yet";
+    reminderOverviewCopy.textContent = hasPausedEntries
+      ? "You still have paused reminders saved in this browser, and you can resume them any time from the reminder page."
+      : "Create a local reminder for paper, batteries, plastics, e-waste, or food waste prep so your homepage stays gently useful.";
+    reminderOverviewNext.textContent = hasPausedEntries
+      ? "Next reminder: paused"
+      : "Next reminder: not scheduled";
+    reminderOverviewList.innerHTML = hasPausedEntries
+      ? pausedEntries
+          .slice(0, MAX_REMINDER_OVERVIEW_ITEMS)
+          .map((entry) => `
+            <article class="reminder-mini-card">
+              <div class="reminder-mini-head">
+                <h3>${escapeHtml(entry.title)}</h3>
+                <span class="history-chip">Paused</span>
+              </div>
+              <p>${escapeHtml(entry.summary)}</p>
+              <div class="reminder-mini-meta">
+                <span class="route-chip">${escapeHtml(getReminderScheduleLabel(entry))}</span>
+              </div>
+            </article>
+          `)
+          .join("")
+      : `
+          <div class="empty-state compact-empty reminder-empty">
+            <span>No reminder routine yet</span>
+            <small>Use the reminder page to set a schedule that stays only in this browser.</small>
+          </div>
+        `;
+    return;
+  }
+
+  if (dueEntries.length > 0) {
+    const firstDue = dueEntries[0];
+    reminderOverviewTitle.textContent =
+      dueEntries.length === 1 ? `Due now: ${firstDue.title}` : `${dueEntries.length} recycling reminders are due`;
+    reminderOverviewCopy.textContent =
+      "These reminders are currently within their due window, so this homepage is surfacing them first.";
+    reminderOverviewNext.textContent = "Reminder window: today";
+  } else if (nextEntry?.timing.nextDue) {
+    reminderOverviewTitle.textContent = `Next up: ${nextEntry.title}`;
+    reminderOverviewCopy.textContent =
+      "Your homepage will keep showing the next scheduled reminder so you can stay on top of weekly and monthly routines.";
+    reminderOverviewNext.textContent = `Next reminder: ${formatTimestamp(nextEntry.timing.nextDue.toISOString())}`;
+  }
+
+  reminderOverviewList.innerHTML = upcomingEntries
+    .map((entry) => `
+      <article class="reminder-mini-card">
+        <div class="reminder-mini-head">
+          <h3>${escapeHtml(entry.title)}</h3>
+          <span class="history-chip">${escapeHtml(entry.dueNow ? "Due now" : formatReminderFrequency(entry.frequency))}</span>
+        </div>
+        <p>${escapeHtml(entry.summary)}</p>
+        <div class="reminder-mini-meta">
+          <span class="route-chip">${escapeHtml(getReminderScheduleLabel(entry))}</span>
+          <span class="history-chip">${escapeHtml(
+            entry.timing.nextDue
+              ? `Next: ${formatTimestamp(entry.timing.nextDue.toISOString())}`
+              : "Schedule pending"
+          )}</span>
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function renderRemindersList(reference = new Date()) {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  const reminderEntries = getSortedReminderEntries(reference);
+
+  if (reminderEntries.length === 0) {
+    remindersList.innerHTML = `
+      <div class="empty-state compact-empty reminder-empty">
+        <span>No reminders saved yet</span>
+        <small>Choose a template above, tune the schedule, and save your first local reminder.</small>
+      </div>
+    `;
+    return;
+  }
+
+  remindersList.innerHTML = reminderEntries
+    .map((entry) => `
+      <article class="reminder-item ${entry.active ? "" : "is-paused"}" data-reminder-id="${escapeHtml(entry.id)}">
+        <div class="reminder-item-head">
+          <div>
+            <h3>${escapeHtml(entry.title)}</h3>
+            <p>${escapeHtml(entry.summary)}</p>
+          </div>
+          <div class="reminder-item-actions">
+            <button class="secondary-btn reminder-toggle-btn" type="button" data-reminder-id="${escapeHtml(entry.id)}">
+              ${entry.active ? "Pause" : "Resume"}
+            </button>
+            <button class="secondary-btn reminder-delete-btn" type="button" data-reminder-id="${escapeHtml(entry.id)}">
+              Delete
+            </button>
+          </div>
+        </div>
+        <div class="reminder-item-meta">
+          <span class="badge ${entry.active ? "recyclable" : "residual"}">${escapeHtml(entry.active ? "Active" : "Paused")}</span>
+          <span class="route-chip">${escapeHtml(getReminderScheduleLabel(entry))}</span>
+          <span class="history-chip">${escapeHtml(
+            entry.timing.nextDue
+              ? `Next: ${formatTimestamp(entry.timing.nextDue.toISOString())}`
+              : "No upcoming time"
+          )}</span>
+          ${entry.dueNow ? '<span class="history-chip">Due within 24 hours</span>' : ""}
+        </div>
+      </article>
+    `)
+    .join("");
+}
+
+function updateReminderFieldVisibility() {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  const isMonthly = reminderFrequencySelect.value === "monthly";
+  reminderWeekdayField.classList.toggle("hidden", isMonthly);
+  reminderMonthdayField.classList.toggle("hidden", !isMonthly);
+}
+
+function applyReminderTemplate(templateId) {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  const template = getReminderTemplate(templateId);
+  reminderTitleInput.value = template.title;
+  reminderSummaryInput.value = template.summary;
+  reminderFrequencySelect.value = template.frequency;
+  reminderWeekdaySelect.value = String(template.dayOfWeek);
+  reminderMonthdaySelect.value = String(template.dayOfMonth);
+  reminderTimeInput.value = template.time;
+  updateReminderFieldVisibility();
+  setReminderFormStatus("Template loaded. Adjust the title, message, or schedule before saving.");
+}
+
+function createReminderId() {
+  if (window.crypto?.randomUUID) {
+    return window.crypto.randomUUID();
+  }
+
+  return `reminder-${Date.now()}-${Math.round(Math.random() * 100000)}`;
+}
+
+function buildReminderPayloadFromForm() {
+  const title = reminderTitleInput.value.trim();
+  const summary = reminderSummaryInput.value.trim();
+  const frequency = reminderFrequencySelect.value;
+  const templateId = reminderTemplateSelect.value;
+  const time = reminderTimeInput.value || "19:00";
+  const dayOfWeek = Number.parseInt(reminderWeekdaySelect.value, 10);
+  const dayOfMonth = Number.parseInt(reminderMonthdaySelect.value, 10);
+
+  if (!title) {
+    throw new Error("Please give the reminder a short title.");
+  }
+
+  if (!summary) {
+    throw new Error("Please add a short reminder note so future you knows what to do.");
+  }
+
+  const startAt = calculateInitialReminderStartAt(frequency, dayOfWeek, dayOfMonth, time);
+
+  return {
+    id: createReminderId(),
+    templateId,
+    title,
+    summary,
+    frequency,
+    dayOfWeek,
+    dayOfMonth,
+    time,
+    startAt: startAt.toISOString(),
+    active: true,
+    lastNotifiedAt: "",
+    createdAt: new Date().toISOString()
+  };
+}
+
+async function requestReminderNotifications() {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  if (!("Notification" in window)) {
+    renderReminderPermissionState();
+    return;
+  }
+
+  const permission = await Notification.requestPermission();
+  renderReminderPermissionState();
+  renderReminderOverview();
+
+  if (permission === "granted") {
+    setReminderFormStatus(
+      "Browser alerts are enabled. Recycle Compass can now show reminder pop-ups while this site stays open in a tab.",
+      "success"
+    );
+    maybeSendReminderNotifications();
+    return;
+  }
+
+  if (permission === "denied") {
+    setReminderFormStatus(
+      "Browser alerts were blocked. The reminders still work on the homepage and reminders page.",
+      "error"
+    );
+    return;
+  }
+
+  setReminderFormStatus("Notification permission was dismissed. You can try again later.");
+}
+
+function updateReminderFormOptions() {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  reminderTemplateSelect.innerHTML = REMINDER_TEMPLATES.map(
+    (template) => `<option value="${escapeHtml(template.id)}">${escapeHtml(template.title)}</option>`
+  ).join("");
+
+  reminderWeekdaySelect.innerHTML = REMINDER_WEEKDAYS.map(
+    (label, index) => `<option value="${index}">${escapeHtml(label)}</option>`
+  ).join("");
+
+  reminderMonthdaySelect.innerHTML = Array.from({ length: 28 }, (_, index) => index + 1)
+    .map((day) => `<option value="${day}">Day ${day}</option>`)
+    .join("");
+}
+
+function saveReminderFromForm() {
+  try {
+    const reminder = buildReminderPayloadFromForm();
+    const reminders = readReminders();
+    writeReminders([reminder, ...reminders]);
+    setReminderFormStatus(
+      "Reminder saved. It now appears on the homepage and in your reminder list.",
+      "success"
+    );
+    renderRemindersList();
+    renderReminderOverview();
+    maybeSendReminderNotifications();
+  } catch (error) {
+    setReminderFormStatus(error.message || "Reminder could not be saved.", "error");
+  }
+}
+
+function toggleReminder(id) {
+  const reminders = readReminders().map((reminder) =>
+    reminder.id === id ? { ...reminder, active: !reminder.active } : reminder
+  );
+  writeReminders(reminders);
+  renderRemindersList();
+  renderReminderOverview();
+}
+
+function deleteReminder(id) {
+  const reminders = readReminders().filter((reminder) => reminder.id !== id);
+  writeReminders(reminders);
+  renderRemindersList();
+  renderReminderOverview();
+}
+
+function markRemindersNotified(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return;
+  }
+
+  const updates = new Map(
+    entries
+      .filter((entry) => entry.timing.currentOccurrence)
+      .map((entry) => [entry.id, entry.timing.currentOccurrence.toISOString()])
+  );
+
+  if (updates.size === 0) {
+    return;
+  }
+
+  const reminders = readReminders().map((reminder) =>
+    updates.has(reminder.id)
+      ? {
+          ...reminder,
+          lastNotifiedAt: updates.get(reminder.id)
+        }
+      : reminder
+  );
+
+  writeReminders(reminders);
+}
+
+function maybeSendReminderNotifications(reference = new Date()) {
+  if (getReminderNotificationPermission() !== "granted") {
+    return;
+  }
+
+  const dueEntries = getSortedReminderEntries(reference).filter((entry) => {
+    if (!entry.dueNow || !entry.timing.currentOccurrence) {
+      return false;
+    }
+
+    return entry.lastNotifiedAt !== entry.timing.currentOccurrence.toISOString();
+  });
+
+  if (dueEntries.length === 0) {
+    return;
+  }
+
+  dueEntries.forEach((entry) => {
+    try {
+      const notification = new Notification(entry.title, {
+        body: `${entry.summary} Next step: ${getReminderScheduleLabel(entry)}.`,
+        tag: `recycle-reminder-${entry.id}-${entry.timing.currentOccurrence.toISOString()}`
+      });
+
+      notification.onclick = () => {
+        window.focus();
+      };
+    } catch (error) {
+      console.warn("Notification could not be shown:", error);
+    }
+  });
+
+  markRemindersNotified(dueEntries);
+  renderRemindersList(reference);
+  renderReminderOverview(reference);
+}
+
+function initializeReminderOverview() {
+  renderReminderOverview();
+}
+
+function initializeRemindersPage() {
+  if (!hasRemindersPageUI) {
+    return;
+  }
+
+  updateReminderFormOptions();
+  applyReminderTemplate(REMINDER_TEMPLATES[0].id);
+  renderReminderPermissionState();
+  renderRemindersList();
+
+  reminderTemplateSelect.addEventListener("change", (event) => {
+    applyReminderTemplate(event.target.value);
+  });
+
+  reminderFrequencySelect.addEventListener("change", updateReminderFieldVisibility);
+  reminderResetBtn.addEventListener("click", () => {
+    applyReminderTemplate(reminderTemplateSelect.value);
+  });
+  reminderNotificationBtn.addEventListener("click", () => {
+    requestReminderNotifications();
+  });
+  reminderForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    saveReminderFromForm();
+  });
+
+  remindersList.addEventListener("click", (event) => {
+    const toggleButton = event.target.closest(".reminder-toggle-btn");
+    if (toggleButton) {
+      toggleReminder(toggleButton.dataset.reminderId || "");
+      return;
+    }
+
+    const deleteButton = event.target.closest(".reminder-delete-btn");
+    if (deleteButton) {
+      deleteReminder(deleteButton.dataset.reminderId || "");
+    }
+  });
+}
+
+function startReminderWatcher() {
+  if (reminderIntervalId) {
+    window.clearInterval(reminderIntervalId);
+  }
+
+  maybeSendReminderNotifications();
+  renderReminderOverview();
+  renderRemindersList();
+
+  reminderIntervalId = window.setInterval(() => {
+    maybeSendReminderNotifications();
+    renderReminderOverview();
+    renderRemindersList();
+  }, REMINDER_CHECK_INTERVAL_MS);
 }
 
 function setVoiceStatus(message, tone = "default") {
@@ -1628,4 +2438,20 @@ if (hasCommonItemDetailUI) {
   initializeCommonItemDetailPage();
 }
 
+if (hasReminderOverviewUI) {
+  initializeReminderOverview();
+}
+
+if (hasRemindersPageUI) {
+  initializeRemindersPage();
+}
+
+window.addEventListener("storage", (event) => {
+  if (event.key === STORAGE_KEYS.reminders) {
+    renderReminderOverview();
+    renderRemindersList();
+  }
+});
+
+startReminderWatcher();
 checkStatus();

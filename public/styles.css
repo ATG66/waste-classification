@@ -236,6 +236,123 @@ h1 {
   gap: 16px;
 }
 
+.landing-dashboard {
+  margin-top: 24px;
+}
+
+.reminder-spotlight-panel,
+.reminder-manager-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.reminder-spotlight-grid,
+.reminder-manager-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 18px;
+}
+
+.reminder-spotlight-card,
+.reminder-helper-card,
+.reminder-form-card,
+.reminder-item,
+.reminder-mini-card {
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(249, 250, 249, 0.96));
+}
+
+.reminder-spotlight-card,
+.reminder-helper-card,
+.reminder-form-card,
+.reminder-mini-card,
+.reminder-item {
+  padding: 18px;
+}
+
+.reminder-spotlight-topline,
+.reminder-mini-head,
+.reminder-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+}
+
+.reminder-spotlight-copy,
+.reminder-helper-card p,
+.reminder-mini-card p,
+.reminder-item p {
+  color: var(--ink-700);
+  line-height: 1.75;
+}
+
+.reminder-spotlight-meta,
+.reminder-mini-meta,
+.reminder-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reminder-spotlight-card {
+  display: grid;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.reminder-spotlight-side,
+.reminder-overview-list,
+.reminder-list {
+  display: grid;
+  gap: 14px;
+}
+
+.reminder-mini-card {
+  display: grid;
+  gap: 12px;
+}
+
+.reminder-manager-grid {
+  align-items: start;
+}
+
+.reminder-form-card,
+.reminder-helper-card {
+  display: grid;
+  gap: 16px;
+}
+
+.reminder-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.reminder-note-box {
+  margin-top: 6px;
+}
+
+.reminder-item {
+  display: grid;
+  gap: 14px;
+}
+
+.reminder-item.is-paused {
+  opacity: 0.8;
+}
+
+.reminder-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reminder-empty {
+  min-height: 160px;
+}
+
 .history-head {
   display: flex;
   justify-content: space-between;
@@ -1272,7 +1389,10 @@ textarea:focus {
   .library-grid,
   .capture-tips,
   .detail-grid,
-  .feedback-grid {
+  .feedback-grid,
+  .reminder-spotlight-grid,
+  .reminder-manager-grid,
+  .reminder-form-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1304,7 +1424,10 @@ textarea:focus {
   }
 
   .voice-option-row,
-  .item-detail-hero {
+  .item-detail-hero,
+  .reminder-item-head,
+  .reminder-spotlight-topline,
+  .reminder-mini-head {
     flex-direction: column;
     align-items: start;
   }

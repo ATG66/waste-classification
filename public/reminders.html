@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recycling Reminders | Recycle Compass</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell feature-shell">
+      <header class="feature-header panel">
+        <div>
+          <a class="back-link" href="/">&larr; Back to Home</a>
+          <p class="eyebrow">Reminder Mode</p>
+          <h1 class="feature-title">Recycling Reminders</h1>
+          <p class="feature-copy">
+            Create lightweight local reminders so paper, plastics, batteries, glass, food waste,
+            and e-waste do not quietly pile up between recycling runs.
+          </p>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="panel reminder-manager-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Personal Reminder Setup</p>
+              <h2>Set your own recycling rhythm</h2>
+            </div>
+            <p class="panel-tip">
+              Reminders stay in this browser only. Browser alerts are optional and work while this
+              site stays open in a tab.
+            </p>
+          </div>
+
+          <div class="reminder-manager-grid">
+            <form class="reminder-form-card" id="reminder-form">
+              <div class="reminder-form-grid">
+                <label class="feedback-field" for="reminder-template">
+                  <span>Reminder Template</span>
+                  <select class="feedback-input" id="reminder-template"></select>
+                </label>
+
+                <label class="feedback-field" for="reminder-title">
+                  <span>Reminder Title</span>
+                  <input
+                    class="feedback-input"
+                    id="reminder-title"
+                    type="text"
+                    placeholder="Weekly Paper and Cardboard Check"
+                  />
+                </label>
+              </div>
+
+              <label class="feedback-field" for="reminder-summary">
+                <span>What should you remember?</span>
+                <textarea
+                  class="feedback-input"
+                  id="reminder-summary"
+                  rows="4"
+                  placeholder="Flatten boxes, keep them dry, and bring them to your next paper collection run."
+                ></textarea>
+              </label>
+
+              <div class="reminder-form-grid">
+                <label class="feedback-field" for="reminder-frequency">
+                  <span>Frequency</span>
+                  <select class="feedback-input" id="reminder-frequency">
+                    <option value="weekly">Every week</option>
+                    <option value="biweekly">Every 2 weeks</option>
+                    <option value="monthly">Every month</option>
+                  </select>
+                </label>
+
+                <label class="feedback-field" for="reminder-time">
+                  <span>Time</span>
+                  <input class="feedback-input" id="reminder-time" type="time" value="19:00" />
+                </label>
+              </div>
+
+              <div class="reminder-form-grid">
+                <label class="feedback-field" id="reminder-weekday-field" for="reminder-weekday">
+                  <span>Day of Week</span>
+                  <select class="feedback-input" id="reminder-weekday"></select>
+                </label>
+
+                <label
+                  class="feedback-field hidden"
+                  id="reminder-monthday-field"
+                  for="reminder-monthday"
+                >
+                  <span>Day of Month</span>
+                  <select class="feedback-input" id="reminder-monthday"></select>
+                </label>
+              </div>
+
+              <div class="feedback-actions">
+                <button class="primary-btn" type="submit">Save Reminder</button>
+                <button class="secondary-btn" id="reset-reminder-form" type="button">
+                  Use Template Defaults
+                </button>
+              </div>
+
+              <div class="feedback-status-line" id="reminder-form-status" aria-live="polite"></div>
+            </form>
+
+            <aside class="reminder-helper-card">
+              <p class="panel-kicker">Browser Alerts</p>
+              <h3>Optional notification support</h3>
+              <p id="reminder-notification-status">
+                We are checking whether this browser can show reminder alerts.
+              </p>
+              <button class="secondary-btn" id="reminder-notification-btn" type="button">
+                Enable Browser Alerts
+              </button>
+              <div class="note-box reminder-note-box">
+                Homepage reminders always work. Browser pop-up alerts are an extra layer when the
+                site is open and your browser allows notifications.
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="history-head">
+            <div>
+              <p class="panel-kicker">Saved Locally</p>
+              <h2>Your Reminder List</h2>
+            </div>
+          </div>
+          <p class="history-privacy">
+            These reminders are stored only in this browser. They are not synced across devices
+            and are not saved to a server-side account.
+          </p>
+          <div class="history-list reminder-list" id="reminders-list">
+            <div class="empty-state compact-empty reminder-empty">
+              <span>No reminders saved yet</span>
+              <small>Use the form above to create your first recycling reminder.</small>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

@@ -38,6 +38,49 @@
           </div>
         </aside>
       </header>
+
+      <main class="dashboard landing-dashboard">
+        <section class="panel reminder-spotlight-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Recycling Reminders</p>
+              <h2>Keep your routines visible</h2>
+            </div>
+            <p class="panel-tip">
+              Set local reminders for paper, plastics, batteries, glass, food waste, or e-waste.
+              Optional browser alerts work while this site stays open in a tab.
+            </p>
+          </div>
+
+          <div class="reminder-spotlight-grid">
+            <div class="reminder-spotlight-card">
+              <div class="reminder-spotlight-topline">
+                <h3 id="reminder-overview-title">Checking reminders</h3>
+                <span class="history-chip" id="reminder-permission-chip">Alerts optional</span>
+              </div>
+              <p class="reminder-spotlight-copy" id="reminder-overview-copy">
+                Your next recycling reminder and any current reminder windows will show here.
+              </p>
+              <div class="reminder-spotlight-meta">
+                <span class="history-chip" id="reminder-overview-count">0 active reminders</span>
+                <span class="route-chip" id="reminder-overview-next">Next reminder: checking</span>
+              </div>
+            </div>
+
+            <div class="reminder-spotlight-side">
+              <div class="reminder-overview-list" id="reminder-overview-list">
+                <div class="empty-state compact-empty reminder-empty">
+                  <span>Checking reminder status</span>
+                  <small>Your local reminder summary will appear here once the page loads.</small>
+                </div>
+              </div>
+              <div class="library-card-actions">
+                <a class="primary-link-btn compact-link" href="/reminders.html">Manage Reminders</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
     <script src="/app.js" defer></script>
