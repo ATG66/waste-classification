@@ -985,6 +985,80 @@ textarea:focus {
   justify-content: flex-start;
 }
 
+.feedback-shell {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+}
+
+.feedback-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(245, 239, 225, 0.42);
+  border: 1px solid rgba(18, 38, 31, 0.08);
+}
+
+.feedback-copy {
+  color: var(--ink-700);
+}
+
+.feedback-form {
+  display: grid;
+  gap: 14px;
+}
+
+.feedback-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feedback-field {
+  display: grid;
+  gap: 8px;
+  color: var(--ink-700);
+  font-size: 0.95rem;
+}
+
+.feedback-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink-900);
+}
+
+.feedback-input:focus {
+  outline: 2px solid rgba(15, 138, 75, 0.2);
+  border-color: rgba(15, 138, 75, 0.35);
+}
+
+.feedback-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.feedback-status-line {
+  min-height: 24px;
+  color: var(--ink-500);
+  line-height: 1.6;
+}
+
+.feedback-status-line.is-success {
+  color: var(--accent-deep);
+}
+
+.feedback-status-line.is-error {
+  color: #a03b2d;
+}
+
 .item-detail-shell {
   display: grid;
   gap: 18px;
@@ -1122,7 +1196,8 @@ textarea:focus {
   .preview-layout,
   .library-grid,
   .capture-tips,
-  .detail-grid {
+  .detail-grid,
+  .feedback-grid {
     grid-template-columns: 1fr;
   }
 

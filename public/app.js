@@ -6,7 +6,10 @@ const MAX_HISTORY_ITEMS = 8;
 
 const state = {
   imageDataUrl: "",
-  stream: null
+  stream: null,
+  lastImageResult: null,
+  lastTextResult: null,
+  lastTextQuestion: ""
 };
 
 const imageUploadInput = document.getElementById("image-upload-input");
@@ -89,6 +92,19 @@ const voiceState = {
   baseText: "",
   finalTranscript: ""
 };
+const FEEDBACK_CATEGORY_OPTIONS = [
+  "Paper",
+  "Plastics",
+  "Metals",
+  "Glass Containers",
+  "Beverage Cartons",
+  "Rechargeable Batteries",
+  "Lamps and Bulbs",
+  "Small Electrical Appliances",
+  "Regulated Electrical Equipment",
+  "Food Waste",
+  "General Waste"
+];
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>\"']/g, (char) => {
@@ -1030,8 +1046,187 @@ function renderDetailSections(preparationSteps, dropOffOptions, warnings) {
   `;
 }
 
+function buildFeedbackCategoryOptions(selectedCategory) {
+  return FEEDBACK_CATEGORY_OPTIONS.map(
+    (category) => `
+      <option value="${escapeHtml(category)}" ${category === selectedCategory ? "selected" : ""}>
+        ${escapeHtml(category)}
+      </option>
+    `
+  ).join("");
+}
+
+function renderFeedbackShell({ source, index, itemName, predictedCategory, predictedRoute }) {
+  return `
+    <div class="feedback-shell" data-feedback-source="${escapeHtml(source)}" data-feedback-index="${escapeHtml(index)}">
+      <button class="secondary-btn feedback-toggle-btn" type="button">This looks wrong</button>
+      <div class="feedback-panel hidden">
+        <p class="feedback-copy">
+          Tell us what should be corrected for ${escapeHtml(itemName || "this result")}.
+        </p>
+        <form class="feedback-form">
+          <div class="feedback-grid">
+            <label class="feedback-field">
+              <span>Correct category</span>
+              <select class="feedback-input feedback-category">
+                ${buildFeedbackCategoryOptions(predictedCategory || "General Waste")}
+              </select>
+            </label>
+            <label class="feedback-field">
+              <span>Correct route</span>
+              <input class="feedback-input feedback-route" type="text" value="${escapeHtml(predictedRoute || "")}" placeholder="Paper collection, General waste, Rechargeable battery collection..." />
+            </label>
+          </div>
+          <label class="feedback-field">
+            <span>What should change?</span>
+            <textarea class="feedback-input feedback-note" rows="3" placeholder="Add any detail that would help review this answer, such as contamination, mixed materials, or the correct Hong Kong route."></textarea>
+          </label>
+          <div class="feedback-actions">
+            <button class="primary-btn feedback-submit-btn" type="submit">Send Feedback</button>
+            <button class="secondary-btn feedback-cancel-btn" type="button">Cancel</button>
+          </div>
+        </form>
+        <div class="feedback-status-line" aria-live="polite"></div>
+      </div>
+    </div>
+  `;
+}
+
+function setFeedbackStatus(shell, message, tone = "default") {
+  const statusLine = shell.querySelector(".feedback-status-line");
+  if (!statusLine) return;
+
+  statusLine.textContent = message;
+  statusLine.classList.remove("is-success", "is-error");
+
+  if (tone === "success") {
+    statusLine.classList.add("is-success");
+  }
+
+  if (tone === "error") {
+    statusLine.classList.add("is-error");
+  }
+}
+
+function getFeedbackContext(source, index) {
+  if (source === "image") {
+    const item = state.lastImageResult?.items?.[index] || {};
+    return {
+      source,
+      itemName: item.name || "",
+      predictedCategory: item.category || "General Waste",
+      predictedRoute: item.route || "",
+      confidence: item.confidence || "",
+      summary: state.lastImageResult?.summary || "",
+      note: state.lastImageResult?.note || ""
+    };
+  }
+
+  return {
+    source: "text",
+    itemName: state.lastTextResult?.reply_title || "Text guidance result",
+    predictedCategory: state.lastTextResult?.category || "General Waste",
+    predictedRoute: state.lastTextResult?.route || "",
+    confidence: "",
+    question: state.lastTextQuestion || "",
+    note: state.lastTextResult?.note || ""
+  };
+}
+
+async function submitFeedbackForm(form) {
+  const shell = form.closest(".feedback-shell");
+  if (!shell) return;
+
+  const source = shell.dataset.feedbackSource || "text";
+  const index = Number(shell.dataset.feedbackIndex || "0");
+  const context = getFeedbackContext(source, index);
+  const correctedCategory = form.querySelector(".feedback-category")?.value?.trim() || "";
+  const correctedRoute = form.querySelector(".feedback-route")?.value?.trim() || "";
+  const note = form.querySelector(".feedback-note")?.value?.trim() || "";
+
+  if (
+    correctedCategory === context.predictedCategory &&
+    correctedRoute === context.predictedRoute &&
+    !note
+  ) {
+    setFeedbackStatus(
+      shell,
+      "Please change the category or route, or add a short note so we know what to review.",
+      "error"
+    );
+    return;
+  }
+
+  const submitButton = form.querySelector(".feedback-submit-btn");
+  const cancelButton = form.querySelector(".feedback-cancel-btn");
+  if (submitButton) submitButton.disabled = true;
+  if (cancelButton) cancelButton.disabled = true;
+  setFeedbackStatus(shell, "Sending feedback...");
+
+  try {
+    const data = await postJson("/api/feedback", {
+      source: context.source,
+      itemName: context.itemName,
+      question: context.question || "",
+      predictedCategory: context.predictedCategory,
+      predictedRoute: context.predictedRoute,
+      correctedCategory,
+      correctedRoute,
+      confidence: context.confidence || "",
+      summary: context.summary || "",
+      note
+    });
+
+    setFeedbackStatus(
+      shell,
+      data.message || "Feedback saved. Thank you for helping us review this result.",
+      "success"
+    );
+    const toggleButton = shell.querySelector(".feedback-toggle-btn");
+    if (toggleButton) {
+      toggleButton.textContent = "Feedback Saved";
+      toggleButton.disabled = true;
+    }
+  } catch (error) {
+    setFeedbackStatus(shell, error.message || "Feedback could not be saved.", "error");
+    if (submitButton) submitButton.disabled = false;
+    if (cancelButton) cancelButton.disabled = false;
+  }
+}
+
+function attachFeedbackHandlers(container) {
+  container.querySelectorAll(".feedback-shell").forEach((shell) => {
+    const toggleButton = shell.querySelector(".feedback-toggle-btn");
+    const panel = shell.querySelector(".feedback-panel");
+    const form = shell.querySelector(".feedback-form");
+    const cancelButton = shell.querySelector(".feedback-cancel-btn");
+
+    if (toggleButton && panel) {
+      toggleButton.addEventListener("click", () => {
+        panel.classList.toggle("hidden");
+        setFeedbackStatus(shell, "");
+      });
+    }
+
+    if (cancelButton && panel) {
+      cancelButton.addEventListener("click", () => {
+        panel.classList.add("hidden");
+        setFeedbackStatus(shell, "");
+      });
+    }
+
+    if (form) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        await submitFeedbackForm(form);
+      });
+    }
+  });
+}
+
 function renderImageResults(data) {
   if (!imageResult) return;
+  state.lastImageResult = data;
   const items = Array.isArray(data.items) ? data.items : [];
 
   if (items.length === 0) {
@@ -1047,7 +1242,7 @@ function renderImageResults(data) {
   imageResult.innerHTML = `
     <div class="result-stack">
       ${items
-        .map((item) => {
+        .map((item, index) => {
           const preparationSteps = getPreparationSteps(item);
           const dropOffOptions = getDropOffOptions(item);
           const warnings = getWarnings(item);
@@ -1066,6 +1261,13 @@ function renderImageResults(data) {
                 </div>
               </div>
               ${renderDetailSections(preparationSteps, dropOffOptions, warnings)}
+              ${renderFeedbackShell({
+                source: "image",
+                index,
+                itemName: item.name || "this item",
+                predictedCategory: item.category || "General Waste",
+                predictedRoute: item.route || ""
+              })}
             </article>
           `;
         })
@@ -1074,10 +1276,13 @@ function renderImageResults(data) {
       <div class="note-box">${escapeHtml(data.note || "If your estate or building runs a different collection arrangement, follow that local instruction first.")}</div>
     </div>
   `;
+
+  attachFeedbackHandlers(imageResult);
 }
 
 function renderTextResults(data) {
   if (!textResult) return;
+  state.lastTextResult = data;
 
   const preparationSteps = getPreparationSteps(data);
   const dropOffOptions = getDropOffOptions(data);
@@ -1099,12 +1304,20 @@ function renderTextResults(data) {
         </div>
         ${renderDetailSections(preparationSteps, dropOffOptions, warnings)}
         ${showReadAloud ? '<div class="answer-tools"><button class="secondary-btn" id="read-answer-btn" type="button" data-state="idle">Read Answer Aloud</button></div>' : ""}
+        ${renderFeedbackShell({
+          source: "text",
+          index: 0,
+          itemName: data.reply_title || "this answer",
+          predictedCategory: data.category || "General Waste",
+          predictedRoute: data.route || ""
+        })}
       </article>
       <div class="note-box">${escapeHtml(data.note || "If your building or estate follows a more specific arrangement, follow that local instruction first.")}</div>
     </div>
   `;
 
   attachReadAloudButton(data);
+  attachFeedbackHandlers(textResult);
 }
 
 function setSelectedImage(dataUrl, fileName) {
@@ -1244,6 +1457,7 @@ async function askTextQuestion(options = {}) {
   askTextBtn.disabled = true;
   renderLoading(textResult, "AI is preparing the Hong Kong disposal guidance...");
   stopSpeakingAnswer();
+  state.lastTextQuestion = question;
 
   try {
     const data = await postJson("/api/ask-category", { question });

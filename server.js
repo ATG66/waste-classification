@@ -10,6 +10,8 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
 const RATE_LIMIT_MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 20);
 const PUBLIC_DIR = path.join(__dirname, "public");
+const DATA_DIR = path.join(__dirname, "data");
+const FEEDBACK_LOG_FILE = path.join(DATA_DIR, "feedback-log.jsonl");
 const rateLimitStore = new Map();
 const CATEGORY_VALUES = [
   "Paper",
@@ -159,6 +161,14 @@ function getClientIp(req) {
   }
 
   return req.socket.remoteAddress || "unknown";
+}
+
+function readTrimmedText(value, maxLength = 400) {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim().slice(0, maxLength);
 }
 
 function cleanupRateLimit(now) {
@@ -431,6 +441,80 @@ async function handleTextConsultation(req, res) {
   sendJson(res, 200, result);
 }
 
+async function appendFeedback(entry) {
+  await fs.promises.mkdir(DATA_DIR, { recursive: true });
+  await fs.promises.appendFile(FEEDBACK_LOG_FILE, `${JSON.stringify(entry)}\n`, "utf8");
+}
+
+async function handleFeedback(req, res) {
+  const body = await readBody(req);
+  const source = readTrimmedText(body.source, 20);
+  const itemName = readTrimmedText(body.itemName, 160);
+  const question = readTrimmedText(body.question, 320);
+  const predictedCategory = readTrimmedText(body.predictedCategory, 120);
+  const predictedRoute = readTrimmedText(body.predictedRoute, 160);
+  const correctedCategory = readTrimmedText(body.correctedCategory, 120);
+  const correctedRoute = readTrimmedText(body.correctedRoute, 160);
+  const confidence = readTrimmedText(body.confidence, 40);
+  const summary = readTrimmedText(body.summary, 280);
+  const note = readTrimmedText(body.note, 1200);
+
+  if (source !== "image" && source !== "text") {
+    sendJson(res, 400, {
+      error: "Unsupported feedback source."
+    });
+    return;
+  }
+
+  if (!itemName) {
+    sendJson(res, 400, {
+      error: "Feedback is missing the result title or item name."
+    });
+    return;
+  }
+
+  if (!predictedCategory && !predictedRoute) {
+    sendJson(res, 400, {
+      error: "Feedback is missing the original prediction."
+    });
+    return;
+  }
+
+  if (
+    correctedCategory === predictedCategory &&
+    correctedRoute === predictedRoute &&
+    !note
+  ) {
+    sendJson(res, 400, {
+      error: "Please change the category or route, or add a short note."
+    });
+    return;
+  }
+
+  const feedbackEntry = {
+    timestamp: new Date().toISOString(),
+    source,
+    itemName,
+    question,
+    predictedCategory,
+    predictedRoute,
+    correctedCategory,
+    correctedRoute,
+    confidence,
+    summary,
+    note,
+    ip: getClientIp(req),
+    userAgent: readTrimmedText(req.headers["user-agent"], 300)
+  };
+
+  await appendFeedback(feedbackEntry);
+
+  sendJson(res, 200, {
+    ok: true,
+    message: "Feedback saved for review."
+  });
+}
+
 function serveFile(res, filePath) {
   fs.readFile(filePath, (error, content) => {
     if (error) {
@@ -491,6 +575,15 @@ const server = http.createServer(async (req, res) => {
       }
 
       await handleTextConsultation(req, res);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/feedback") {
+      if (!checkRateLimit(req, res)) {
+        return;
+      }
+
+      await handleFeedback(req, res);
       return;
     }
 
