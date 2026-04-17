@@ -545,6 +545,18 @@ h1 {
   font-weight: 600;
 }
 
+.component-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(36, 108, 138, 0.12);
+  color: #1e5f7b;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .history-chip {
   display: inline-flex;
   align-items: center;
@@ -879,6 +891,38 @@ textarea:focus {
 .qa-stack {
   display: grid;
   gap: 14px;
+}
+
+.result-overview {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(223, 243, 232, 0.38);
+  border: 1px solid rgba(15, 138, 75, 0.12);
+}
+
+.result-overview strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.result-overview p {
+  color: var(--ink-700);
+}
+
+.result-overview-count {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 800;
 }
 
 .result-item,
@@ -1222,6 +1266,10 @@ textarea:focus {
   .voice-toolbar {
     grid-template-columns: 1fr;
     align-items: stretch;
+  }
+
+  .result-overview {
+    grid-template-columns: 1fr;
   }
 
   .voice-option-row,

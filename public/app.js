@@ -1228,6 +1228,10 @@ function renderImageResults(data) {
   if (!imageResult) return;
   state.lastImageResult = data;
   const items = Array.isArray(data.items) ? data.items : [];
+  const detectedCount =
+    Number.isFinite(data.detected_item_count) && data.detected_item_count > 0
+      ? data.detected_item_count
+      : items.length;
 
   if (items.length === 0) {
     imageResult.innerHTML = `
@@ -1241,6 +1245,17 @@ function renderImageResults(data) {
 
   imageResult.innerHTML = `
     <div class="result-stack">
+      <div class="result-overview">
+        <span class="result-overview-count">${escapeHtml(String(detectedCount))}</span>
+        <div>
+          <strong>Separate item recognition is on</strong>
+          <p>${escapeHtml(
+            detectedCount > 1
+              ? `The system split this photo into ${detectedCount} items or components so each one can get its own route.`
+              : "The system found one main item in this photo."
+          )}</p>
+        </div>
+      </div>
       ${items
         .map((item, index) => {
           const preparationSteps = getPreparationSteps(item);
@@ -1255,6 +1270,7 @@ function renderImageResults(data) {
                   <p>${escapeHtml(item.reason || "AI identified the item, but no detailed reason was returned.")}</p>
                 </div>
                 <div class="item-head-meta">
+                  <span class="component-chip">${escapeHtml(item.component_role || "Separate item")}</span>
                   <span class="badge ${categoryClass(item.category)}">${escapeHtml(item.category || "General Waste")}</span>
                   <span class="route-chip">${escapeHtml(item.route || "Route unavailable")}</span>
                   <div class="confidence">Confidence: ${escapeHtml(item.confidence || "Not provided")}</div>

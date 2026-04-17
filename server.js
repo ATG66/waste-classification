@@ -227,12 +227,20 @@ function buildImageSchema() {
   return {
     type: "object",
     properties: {
+      detected_item_count: {
+        type: "integer",
+        description: "How many distinct items or separable components were detected in the image."
+      },
       items: {
         type: "array",
         items: {
           type: "object",
           properties: {
             name: { type: "string", description: "Short item name found in the image." },
+            component_role: {
+              type: "string",
+              description: "What this item is in the overall set, such as main container, lid, straw, sleeve, or separate item."
+            },
             category: {
               type: "string",
               enum: CATEGORY_VALUES,
@@ -266,6 +274,7 @@ function buildImageSchema() {
           },
           required: [
             "name",
+            "component_role",
             "category",
             "route",
             "confidence",
@@ -282,7 +291,7 @@ function buildImageSchema() {
         description: "Extra reminder, especially when building-level arrangements may differ."
       }
     },
-    required: ["items", "summary", "note"]
+    required: ["detected_item_count", "items", "summary", "note"]
   };
 }
 
@@ -391,7 +400,11 @@ async function handleImageClassification(req, res) {
     "You are an English recycling guidance assistant for Hong Kong households.",
     "Identify the main waste item or items in the image and classify them using practical Hong Kong disposal and recycling routes.",
     `The only allowed category values are: ${CATEGORY_VALUES.join(", ")}.`,
-    "If the image contains multiple items, return at most 3 main items.",
+    "Detect distinct visible items separately, and also split obvious separable components when they should be disposed of differently.",
+    "Examples of separable components include: cup and lid, straw and cup, bottle and cap, carton and straw, appliance and battery.",
+    "Do not merge components into one result if they likely need different disposal routes.",
+    "If several identical items share the same route, you may group them into one result with a clear plural name.",
+    "Return up to 6 separate results when needed.",
     "Focus on real user actions: where it should go, how to prepare it, and what exceptions matter.",
     "If recognition is uncertain, clearly explain that uncertainty in note.",
     "Respond in English only.",
