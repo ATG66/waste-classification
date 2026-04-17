@@ -231,6 +231,11 @@ function buildImageSchema() {
         type: "integer",
         description: "How many distinct items or separable components were detected in the image."
       },
+      visible_text: {
+        type: "array",
+        items: { type: "string" },
+        description: "Important readable words or phrases visible anywhere in the image packaging or labels."
+      },
       items: {
         type: "array",
         items: {
@@ -261,6 +266,11 @@ function buildImageSchema() {
               items: { type: "string" },
               description: "How the user should prepare the item before disposal or recycling."
             },
+            packaging_text: {
+              type: "array",
+              items: { type: "string" },
+              description: "Short readable words or phrases visible on this item's packaging, label, or printed surface."
+            },
             drop_off_options: {
               type: "array",
               items: { type: "string" },
@@ -280,6 +290,7 @@ function buildImageSchema() {
             "confidence",
             "reason",
             "preparation_steps",
+            "packaging_text",
             "drop_off_options",
             "warnings"
           ]
@@ -291,7 +302,7 @@ function buildImageSchema() {
         description: "Extra reminder, especially when building-level arrangements may differ."
       }
     },
-    required: ["detected_item_count", "items", "summary", "note"]
+    required: ["detected_item_count", "visible_text", "items", "summary", "note"]
   };
 }
 
@@ -405,6 +416,9 @@ async function handleImageClassification(req, res) {
     "Do not merge components into one result if they likely need different disposal routes.",
     "If several identical items share the same route, you may group them into one result with a clear plural name.",
     "Return up to 6 separate results when needed.",
+    "Read important visible packaging text, brand words, material labels, recycling symbols, and printed clues when they are legible.",
+    "Return global visible_text for the whole image and packaging_text for each item.",
+    "Only include text you can actually see or read from the image. If no useful text is visible, return empty arrays.",
     "Focus on real user actions: where it should go, how to prepare it, and what exceptions matter.",
     "If recognition is uncertain, clearly explain that uncertainty in note.",
     "Respond in English only.",

@@ -1046,6 +1046,18 @@ function renderDetailSections(preparationSteps, dropOffOptions, warnings) {
   `;
 }
 
+function renderTextChipList(items, emptyText = "No useful printed text was detected.") {
+  if (!Array.isArray(items) || items.length === 0) {
+    return `<p class="ocr-empty">${escapeHtml(emptyText)}</p>`;
+  }
+
+  return `
+    <div class="ocr-chip-list">
+      ${items.map((item) => `<span class="ocr-chip">${escapeHtml(item)}</span>`).join("")}
+    </div>
+  `;
+}
+
 function buildFeedbackCategoryOptions(selectedCategory) {
   return FEEDBACK_CATEGORY_OPTIONS.map(
     (category) => `
@@ -1228,6 +1240,7 @@ function renderImageResults(data) {
   if (!imageResult) return;
   state.lastImageResult = data;
   const items = Array.isArray(data.items) ? data.items : [];
+  const visibleText = Array.isArray(data.visible_text) ? data.visible_text : [];
   const detectedCount =
     Number.isFinite(data.detected_item_count) && data.detected_item_count > 0
       ? data.detected_item_count
@@ -1256,11 +1269,17 @@ function renderImageResults(data) {
           )}</p>
         </div>
       </div>
+      <article class="detail-card ocr-overview-card">
+        <h3>Visible Packaging Text</h3>
+        <p class="ocr-copy">Useful printed words, labels, or material clues that AI could read from the image.</p>
+        ${renderTextChipList(visibleText)}
+      </article>
       ${items
         .map((item, index) => {
           const preparationSteps = getPreparationSteps(item);
           const dropOffOptions = getDropOffOptions(item);
           const warnings = getWarnings(item);
+          const packagingText = Array.isArray(item.packaging_text) ? item.packaging_text : [];
 
           return `
             <article class="result-item">
@@ -1275,6 +1294,10 @@ function renderImageResults(data) {
                   <span class="route-chip">${escapeHtml(item.route || "Route unavailable")}</span>
                   <div class="confidence">Confidence: ${escapeHtml(item.confidence || "Not provided")}</div>
                 </div>
+              </div>
+              <div class="detail-card detail-card-wide ocr-item-card">
+                <h3>Text Read From This Item</h3>
+                ${renderTextChipList(packagingText)}
               </div>
               ${renderDetailSections(preparationSteps, dropOffOptions, warnings)}
               ${renderFeedbackShell({
